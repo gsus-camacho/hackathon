@@ -1,0 +1,145 @@
+---
+import Layout from "../layouts/Layout.astro";
+import KpiCard from "../components/KpiCard.tsx";
+import RevenueChart from "../components/RevenueChart.tsx";
+import TopProducts from "../components/TopProducts.tsx";
+import ActivityFeed from "../components/ActivityFeed.tsx";
+import Card from "../components/Card.tsx";
+import { serverGet, formatCurrency, formatNumber } from "../lib/api";
+import {
+  ShieldAlert,
+  TrendingDown,
+  CircleDollarSign,
+  Users,
+} from "lucide-react";
+
+let kpis: any = {}, series: any[] = [], top: any[] = [], activity: any[] = [];
+try {
+  [kpis, series, top, activity] = await Promise.all([
+    serverGet("/statistics/kpis"),
+    serverGet("/statistics/series?days=14"),
+    serverGet("/statistics/top-products?limit=8"),
+    serverGet("/statistics/activity?limit=10"),
+  ]);
+} catch (e) {
+  console.error("dashboard load failed", e);
+}
+---
+<Layout title="Dashboard" active="dashboard" description="Centro de inteligencia">
+  <div class="flex items-end justify-between mb-7 animate-fade-up">
+    <div>
+      <h1 class="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-bio-900">
+        BioAlert+ Dashboard
+      </h1>
+      <p class="text-bio-500 mt-1 text-sm">
+        Capa de inteligencia sobre Biofood — datos de los últimos 30 días en toda la red.
+      </p>
+    </div>
+  </div>
+
+  <!-- KPI strip -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <KpiCard
+      label="Alertas activas"
+      value={formatNumber(kpis.active_alerts)}
+      icon={ShieldAlert}
+      accent="danger"
+      testId="kpi-active-alerts"
+      delta={`${formatNumber(kpis.allergen_profiles)} perfiles alergenos`}
+    />
+    <KpiCard
+      label="Estudiantes en riesgo"
+      value={formatNumber(kpis.students_at_risk)}
+      icon={TrendingDown}
+      accent="warn"
+      testId="kpi-students-risk"
+      delta="saldo bajo / sin consumo"
+    />
+    <KpiCard
+      label="Ingresos 30d"
+      value={formatCurrency(kpis.total_revenue_30d)}
+      icon={CircleDollarSign}
+      accent="ok"
+      testId="kpi-revenue"
+      delta={`recargas ${formatCurrency(kpis.total_recargas_30d)}`}
+      deltaTone="positive"
+    />
+    <KpiCard
+      label="Estudiantes activos"
+      value={formatNumber(kpis.total_students)}
+      icon={Users}
+      accent="brand"
+      testId="kpi-students"
+      delta={`${formatNumber(kpis.bot_sessions_today)} sesiones bot hoy`}
+    />
+  </div>
+
+  <!-- Hero strip with grain -->
+  <section class="relative overflow-hidden rounded-2xl bg-bio-900 text-bio-100 p-6 mb-6 grain" data-testid="hero-strip">
+    <div class="relative flex items-center justify-between gap-6 flex-wrap">
+      <div>
+        <span class="text-[10px] uppercase tracking-[0.25em] font-mono text-bio-500">Capa de inteligencia</span>
+        <h2 class="font-heading text-2xl sm:text-3xl font-semibold text-white mt-2 max-w-xl">
+          De ventas pasivas a decisiones, seguridad y revenue.
+        </h2>
+        <p class="text-sm text-bio-200 mt-2 max-w-xl">
+          BioAlert+ procesa <strong class="text-white font-mono">{formatNumber(kpis.total_students)}</strong> estudiantes con
+          alertas de alergenos, predicción de saldo, paquetes dinámicos y un BioBot en WhatsApp.
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <a href="/recommendations" data-testid="cta-recommendations" class="rounded-lg bg-brand hover:bg-brand-hover px-4 py-2 text-sm font-medium text-white transition-colors">
+          Generar recomendaciones IA
+        </a>
+        <a href="/bot" data-testid="cta-bot" class="rounded-lg bg-bio-800 hover:bg-bio-800/70 px-4 py-2 text-sm font-medium text-bio-100 transition-colors">
+          Probar BioBot
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chart + activity -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="lg:col-span-2">
+      <Card title="Ventas y recargas — últimos 14 días" description="Serie diaria a partir de hackaton_ventas + hackaton_recargas">
+        <RevenueChart data={series} client:load />
+      </Card>
+    </div>
+    <Card title="Actividad reciente" description="Últimos movimientos en la red">
+      <ActivityFeed items={activity} client:visible />
+    </Card>
+  </div>
+
+  <!-- Top products + secondary stats -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+      <Card title="Productos más vendidos" description="Ranking por ingresos en 30 días">
+        <TopProducts products={top} client:visible />
+      </Card>
+    </div>
+    <Card title="Salud operativa" description="Score y satisfacción">
+      <div class="space-y-5">
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-bio-500 font-mono">Satisfacción</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="font-heading text-3xl font-semibold text-bio-900">{(kpis.satisfaction_score || 0).toFixed(2)}</span>
+            <span class="text-sm text-bio-500">/ 5</span>
+          </div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-bio-500 font-mono">BioBot</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="font-heading text-3xl font-semibold text-bio-900">{formatNumber(kpis.bot_sessions_today)}</span>
+            <span class="text-sm text-bio-500">sesiones hoy</span>
+          </div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-bio-500 font-mono">Revenue paquetes</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="font-heading text-2xl font-semibold text-bio-900">{formatCurrency(kpis.package_revenue)}</span>
+          </div>
+        </div>
+      </div>
+    </Card>
+  </div>
+</Layout>

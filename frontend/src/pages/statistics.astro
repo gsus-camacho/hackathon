@@ -1,0 +1,58 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card.tsx";
+import RevenueChart from "../components/RevenueChart.tsx";
+import TopProducts from "../components/TopProducts.tsx";
+import { serverGet, formatCurrency, formatNumber } from "../lib/api";
+
+let schools: any[] = [], series: any[] = [], top: any[] = [];
+try {
+  [schools, series, top] = await Promise.all([
+    serverGet("/statistics/schools?limit=10"),
+    serverGet("/statistics/series?days=30"),
+    serverGet("/statistics/top-products?limit=12"),
+  ]);
+} catch {}
+---
+<Layout title="Estadísticas" active="statistics" description="Benchmark + satisfacción">
+  <div class="mb-6">
+    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Estadísticas</h1>
+    <p class="text-bio-500 text-sm mt-1">Benchmark cross-colegio + tendencias de la red.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="lg:col-span-2">
+      <Card title="Tendencia red — 30 días">
+        <RevenueChart data={series} client:load />
+      </Card>
+    </div>
+    <Card title="Top productos red">
+      <TopProducts products={top} client:visible />
+    </Card>
+  </div>
+
+  <Card title="Ranking de colegios" description="Por número de estudiantes activos">
+    <div class="overflow-x-auto -mx-5">
+      <table class="w-full text-sm" data-testid="schools-ranking">
+        <thead>
+          <tr class="text-left text-[10px] uppercase tracking-[0.18em] text-bio-500 font-mono border-b border-bio-200">
+            <th class="px-5 py-3">#</th>
+            <th class="px-5 py-3">Colegio</th>
+            <th class="px-5 py-3 font-mono">NIT</th>
+            <th class="px-5 py-3 text-right">Estudiantes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {schools.map((s, i) => (
+            <tr class="border-b border-bio-100 hover:bg-bio-50 transition-colors" data-testid={`school-row-${i}`}>
+              <td class="px-5 py-3 font-mono text-bio-500">{i + 1}</td>
+              <td class="px-5 py-3 font-medium text-bio-900">{s.colegio}</td>
+              <td class="px-5 py-3 font-mono text-xs text-bio-500">{s.nit_colegio}</td>
+              <td class="px-5 py-3 text-right font-mono">{formatNumber(s.total_students)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </Card>
+</Layout>

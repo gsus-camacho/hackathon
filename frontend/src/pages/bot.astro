@@ -1,0 +1,49 @@
+---
+import Layout from "../layouts/Layout.astro";
+import BotSimulator from "../components/BotSimulator.tsx";
+import { PUBLIC_BACKEND_URL } from "../lib/api";
+---
+<Layout title="BioBot" active="bot" description="Conversation handler">
+  <div class="mb-6">
+    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">BioBot · ConversationHandler</h1>
+    <p class="text-bio-500 text-sm mt-1">
+      Simulador del webhook de WhatsApp. Intent → datos Biofood → Gemini → respuesta.
+    </p>
+  </div>
+  <div class="grid lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 rounded-xl border border-bio-200 bg-white p-5">
+      <BotSimulator apiBase={PUBLIC_BACKEND_URL} client:load />
+    </div>
+    <div class="rounded-xl border border-bio-200 bg-white p-5 h-fit">
+      <h3 class="font-heading font-semibold text-bio-900 mb-3">Intents soportados</h3>
+      <ul class="space-y-3 text-sm">
+        <li class="flex items-start gap-2">
+          <span class="rounded bg-brand-soft text-brand text-[10px] font-mono px-2 py-0.5">consumption</span>
+          <span class="text-bio-700">Qué ha consumido mi hijo</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="rounded bg-emerald-50 text-ok text-[10px] font-mono px-2 py-0.5">balance</span>
+          <span class="text-bio-700">Saldo actual y predicción</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="rounded bg-amber-50 text-warn text-[10px] font-mono px-2 py-0.5">package</span>
+          <span class="text-bio-700">Paquetes y ofertas dinámicas</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="rounded bg-red-50 text-danger text-[10px] font-mono px-2 py-0.5">alerts</span>
+          <span class="text-bio-700">Perfiles de alergenos y alertas activas</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="rounded bg-bio-100 text-bio-700 text-[10px] font-mono px-2 py-0.5">greeting</span>
+          <span class="text-bio-700">Saludo y onboarding al menú</span>
+        </li>
+      </ul>
+      <div class="mt-5 pt-5 border-t border-bio-200">
+        <h4 class="font-heading font-medium text-bio-900 mb-2 text-sm">Webhook URL para Twilio</h4>
+        <code class="block text-[10px] font-mono text-bio-500 bg-bio-50 p-2 rounded overflow-x-auto">
+          POST /api/notifications/whatsapp/webhook
+        </code>
+      </div>
+    </div>
+  </div>
+</Layout>

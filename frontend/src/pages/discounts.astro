@@ -1,0 +1,13 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PackageList from "../components/PackageList.tsx";
+import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
+
+let pkgs: any[] = [];
+try {
+  pkgs = await serverGet("/discounts/packages");
+} catch {}
+---
+<Layout title="Paquetes Dinámicos" active="discounts" description="Discounts module">
+  <PackageList apiBase={PUBLIC_BACKEND_URL} initial={pkgs} client:load />
+</Layout>

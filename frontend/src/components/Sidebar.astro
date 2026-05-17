@@ -1,0 +1,88 @@
+---
+import {
+  LayoutDashboard,
+  Tag,
+  Bell,
+  Star,
+  TrendingUp,
+  BarChart3,
+  Sparkles,
+  ShieldAlert,
+  MessageCircle,
+} from "lucide-react";
+
+const { active = "dashboard" } = Astro.props;
+
+const items = [
+  { key: "dashboard", label: "Dashboard", href: "/", icon: LayoutDashboard },
+  { key: "discounts", label: "Paquetes", href: "/discounts", icon: Tag },
+  { key: "notifications", label: "Notificaciones", href: "/notifications", icon: Bell },
+  { key: "feedback", label: "Feedback", href: "/feedback", icon: Star },
+  { key: "planifications", label: "Planificaciones", href: "/planifications", icon: TrendingUp },
+  { key: "statistics", label: "Estadísticas", href: "/statistics", icon: BarChart3 },
+  { key: "recommendations", label: "Recomendaciones IA", href: "/recommendations", icon: Sparkles },
+  { key: "allergens", label: "Alergenos", href: "/allergens", icon: ShieldAlert },
+  { key: "bot", label: "BioBot", href: "/bot", icon: MessageCircle },
+];
+---
+<aside
+  class="hidden md:fixed md:inset-y-0 md:left-0 md:flex md:w-64 md:flex-col bg-bio-900 text-bio-100"
+  data-testid="main-sidebar"
+>
+  <div class="px-6 py-7 border-b border-bio-800">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-brand grid place-items-center text-white font-heading font-bold">
+        B+
+      </div>
+      <div>
+        <div class="font-heading font-semibold text-white tracking-tight">BioAlert<span class="text-brand">+</span></div>
+        <div class="text-[10px] uppercase tracking-[0.22em] text-bio-500 font-mono">Intelligence layer</div>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+    {items.map((item) => {
+      const Icon = item.icon;
+      const isActive = item.key === active;
+      return (
+        <a
+          href={item.href}
+          data-testid={`sidebar-nav-${item.key}`}
+          class={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
+            isActive
+              ? "bg-brand text-white shadow-card"
+              : "text-bio-200 hover:bg-bio-800 hover:text-white"
+          }`}
+        >
+          <Icon class="h-[18px] w-[18px]" />
+          <span class="font-medium">{item.label}</span>
+        </a>
+      );
+    })}
+  </nav>
+  <div class="px-4 py-4 border-t border-bio-800">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-bio-800 grid place-items-center text-bio-200 font-semibold">N</div>
+      <div class="text-xs">
+        <div class="font-medium text-bio-100">Nutricionista</div>
+        <div class="text-bio-500 font-mono">admin@bioalert.co</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Mobile top bar -->
+<header class="md:hidden sticky top-0 z-30 bg-bio-900 text-bio-100 px-4 py-3 flex items-center justify-between border-b border-bio-800">
+  <a href="/" class="font-heading font-bold tracking-tight text-white">BioAlert<span class="text-brand">+</span></a>
+  <nav class="flex items-center gap-2 overflow-x-auto">
+    {items.slice(0, 5).map((i) => (
+      <a
+        href={i.href}
+        class={`text-xs px-2.5 py-1.5 rounded-md ${i.key === active ? "bg-brand text-white" : "text-bio-300"}`}
+        data-testid={`sidebar-mobile-${i.key}`}
+      >
+        {i.label}
+      </a>
+    ))}
+  </nav>
+</header>

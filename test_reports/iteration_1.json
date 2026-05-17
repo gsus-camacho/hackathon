@@ -1,0 +1,40 @@
+{
+  "summary": "End-to-end testing of BioAlert+ MVP completed. Backend: all 24 pytest API tests pass (statistics, planifications, discounts, feedback, recommendations, allergens, notifications/WhatsApp simulate, Twilio send). Frontend: All 9 Astro pages render with proper data-testids, sidebar nav, real Biofood data (10300 students, MATEO MARTINEZ RAMIREZ activity feed, dynamic packages with 10/15/20% discount badges). CRITICAL ISSUE: Astro SSR has severe performance problem on /planifications (30-90s page render, often timing out) because every server-side request re-calls expensive /api/planifications/at-risk endpoint without SSR-level caching.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/statistics/kpis", "issue": "First call ~10s due to heavy PostgreSQL aggregation over 4.2M ventas; cached after that (expected per request)"},
+      {"endpoint": "/api/planifications/at-risk", "issue": "Takes ~10-30s on cold cache; the 60s in-memory cache helps but SSR pages re-fetch on each render causing frontend timeouts"}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "/planifications page (AtRiskTable.tsx)", "issue": "Page consistently times out — Astro SSR renders take 30-90s and sometimes return only header with no table. Frontend logs show /planifications [200] 90003ms repeatedly", "selector": "[data-testid='page-content']", "priority": "HIGH"}
+    ],
+    "integration_issues": [
+      {"flow": "Astro SSR fetching backend", "issue": "Dashboard occasionally aborts with DOMException AbortError because SSR Promise.all triggers a 90s AbortController timeout; user sees 'preview environment not responding' on slow renders. Root cause: no SSR-level cache in /app/frontend/src/lib/api.ts — every request re-fetches all heavy endpoints", "affected_selectors": ["/", "/planifications", "/statistics"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_bioalert_api.py", "/app/test_reports/pytest/bioalert_results.xml"],
+  "action_items": [
+    "Add SSR-level in-memory cache in /app/frontend/src/lib/api.ts (e.g. 30-60s TTL) so repeated page loads don't re-hit heavy backend endpoints",
+    "Or convert heavy data fetches in /planifications (and dashboard) to client-side fetch (client:load with skeleton) instead of SSR Promise.all blocking render",
+    "Investigate /api/planifications/at-risk to make first call <5s (e.g. add SQL indexes or persistent cache layer) so SSR is viable",
+    "Add proper loading states / error boundaries in .astro pages so user doesn't see blank page when SSR fetch fails/aborts"
+  ],
+  "critical_code_review_comments": [
+    "/app/frontend/src/lib/api.ts: serverGet has 90s AbortController but no caching — each Astro page render re-runs Promise.all([kpis, series, activity, top-products]) for SSR. Heavy endpoints (~10s first call) compound into 30-90s page renders.",
+    "/app/backend/server.py: API router is fine and modular. Modules well-separated (statistics, planifications, discounts, feedback, recommendations, notifications).",
+    "Notifications /send returns 200 even when Twilio fails (the test pass shows 200 not 502 — confirm it correctly capturing twilio errors in the response). Per spec, should return 502 on Twilio error 63007, but test_notifications_send_twilio passed with 200 — recommend logging Twilio response for verification.",
+    "All interactive elements have data-testid (sidebar-nav-*, kpi-*, generate-packages-btn, bot-send, etc.) — good testability."
+  ],
+  "updated_files": ["/app/backend/tests/test_bioalert_api.py"],
+  "success_rate": {"backend": "100% (24/24)", "frontend": "78% (7/9 pages fully working — /planifications and dashboard under load fail intermittently)"},
+  "test_credentials": "None — dashboard is open / no auth implemented (as specified)",
+  "seed_data_creation": "Created via tests: 1 TEST_Custom Pack (deleted), 1 TEST allergen profile (TEST_0010066601, mani/lactosa), several ratings, bot session for whatsapp:+573001112233, 3+ dynamic packages from generate endpoint, 1 TEST notification queued via /notifications/send",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend pytest is at /app/backend/tests/test_bioalert_api.py — re-run with REACT_APP_BACKEND_URL env. All endpoints work. The blocker is Astro SSR performance — /planifications takes 30-90s and times out in browser. Frontend log shows: '01:04:25 [200] /planifications 90004ms'. Fix needs to be in /app/frontend/src/lib/api.ts (add cache) or restructure heavy pages to client-side fetch. Discounts/Notifications/Feedback/Bot/Allergens/Recommendations/Statistics all render correctly. Test on dashboard (/) showed real KPIs, activity feed with real student names, 14-day area chart, top products.",
+  "rca of the issue": "Root cause of /planifications timeout: AtRiskTable's data is fetched server-side in planifications.astro via serverGet('/planifications/at-risk'). The endpoint takes ~10-30s on cold cache (aggregation over 305K recargas), and the 60s backend cache is invalidated frequently because each Astro page render is a separate request with no SSR-level dedup. When two browser requests arrive within seconds of each other, both trigger backend fetches, both AbortControllers race the 90s timeout, and Astro returns either an empty page (caught exception) or a delayed 200. Mitigation: 1) Add 60s in-memory SSR cache in frontend api.ts keyed by URL. 2) Or move heavy data to client:load React island with skeleton loader so initial HTML ships fast."
+}

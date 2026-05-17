@@ -1,0 +1,15 @@
+---
+import Layout from "../layouts/Layout.astro";
+import NotificationsPanel from "../components/NotificationsPanel.tsx";
+import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
+
+let items: any[] = [];
+try { items = await serverGet("/notifications/?limit=50"); } catch {}
+---
+<Layout title="Notificaciones" active="notifications" description="WhatsApp outbound">
+  <div class="mb-6">
+    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Notificaciones WhatsApp</h1>
+    <p class="text-bio-500 text-sm mt-1">Envío directo vía Twilio + bandeja de salida.</p>
+  </div>
+  <NotificationsPanel apiBase={PUBLIC_BACKEND_URL} initial={items} client:load />
+</Layout>

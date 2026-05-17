@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+import Sidebar from "../components/Sidebar.astro";
+import { PUBLIC_BACKEND_URL } from "../lib/api";
+
+interface Props {
+  title?: string;
+  active?: string;
+  description?: string;
+}
+const { title = "BioAlert+", active = "dashboard", description = "" } = Astro.props;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Capa de inteligencia BioAlert+ sobre Biofood" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} — BioAlert+</title>
+    <script is:inline define:vars={{ url: PUBLIC_BACKEND_URL }}>
+      window.__BIOALERT_BACKEND_URL__ = url;
+    </script>
+  </head>
+  <body class="min-h-screen bg-bio-50 text-bio-900 font-sans">
+    <div class="flex min-h-screen">
+      <Sidebar active={active} />
+      <main class="flex-1 ml-0 md:ml-64">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8" data-testid="page-content">
+          {description && (
+            <p class="text-bio-500 text-sm mb-1 font-mono uppercase tracking-[0.18em]">{description}</p>
+          )}
+          <slot />
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

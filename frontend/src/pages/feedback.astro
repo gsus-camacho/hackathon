@@ -1,0 +1,20 @@
+---
+import Layout from "../layouts/Layout.astro";
+import FeedbackPanel from "../components/FeedbackPanel.tsx";
+import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
+
+let ratings: any[] = [], summary: any = { average: 0, count: 0 };
+try {
+  [ratings, summary] = await Promise.all([
+    serverGet("/feedback/ratings?limit=50"),
+    serverGet("/feedback/summary"),
+  ]);
+} catch {}
+---
+<Layout title="Feedback" active="feedback" description="Ratings module">
+  <div class="mb-6">
+    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Feedback</h1>
+    <p class="text-bio-500 text-sm mt-1">Ratings y comentarios de la comunidad.</p>
+  </div>
+  <FeedbackPanel apiBase={PUBLIC_BACKEND_URL} initial={ratings} summary={summary} client:load />
+</Layout>
