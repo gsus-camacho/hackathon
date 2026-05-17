@@ -1,14 +1,16 @@
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import tailwind from "@astrojs/tailwind";
-
+import node from "astro/logger/node";
 
 
 import vercel from "@astrojs/vercel";
 
 export default defineConfig({
   output: "server",
-  adapter: vercel(),
+  adapter: node({
+    mode: "standalone",
+  }),
   server: { host: "0.0.0.0", port: 3000 },
   integrations: [react(), tailwind({ applyBaseStyles: false })],
   vite: {
