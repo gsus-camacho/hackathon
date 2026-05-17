@@ -13,6 +13,14 @@ const chipClass: Record<string, string> = {
 };
 
 export const SatisfactionTable: React.FC<{ data: SatisfactionItem[] }> = ({ data }) => {
+  if (data.length === 0) {
+    return (
+      <p className="text-sm text-slate-500 py-6 text-center" data-testid="satisfaction-table-empty">
+        Aún no hay votos de feedback para calcular el Satisfaction Index.
+      </p>
+    );
+  }
+
   return (
     <div className="overflow-x-auto" data-testid="satisfaction-table">
       <table className="w-full text-sm">

@@ -6,6 +6,14 @@ interface BenchmarkItem {
 }
 
 export const BenchmarkChart: React.FC<{ data: BenchmarkItem[] }> = ({ data }) => {
+  if (data.length === 0) {
+    return (
+      <p className="text-sm text-slate-500 py-6 text-center" data-testid="benchmark-chart-empty">
+        Sin productos con ventas en el período.
+      </p>
+    );
+  }
+
   const maxAbs = Math.max(...data.map((d) => Math.abs(d.delta)), 1);
 
   return (

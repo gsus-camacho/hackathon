@@ -15,7 +15,18 @@ function formatCOP(value: number): string {
   return `$${value.toLocaleString("es-CO")}`;
 }
 
-export const SchoolsRanking: React.FC<{ data: SchoolItem[] }> = ({ data }) => {
+export const SchoolsRanking: React.FC<{ data: SchoolItem[]; days?: number }> = ({
+  data,
+  days = 90,
+}) => {
+  if (data.length === 0) {
+    return (
+      <p className="text-sm text-slate-500 py-6 text-center" data-testid="schools-ranking-empty">
+        Sin datos de colegios para el período seleccionado.
+      </p>
+    );
+  }
+
   const maxRev = Math.max(...data.map((d) => d.total_revenue), 1);
 
   return (
@@ -54,7 +65,7 @@ export const SchoolsRanking: React.FC<{ data: SchoolItem[] }> = ({ data }) => {
         );
       })}
       <p className="text-xs text-slate-400 font-mono mt-2">
-        Revenue por colegio · período {data.length > 0 ? "90" : "—"} días
+        Revenue por colegio · últimos {days} días
       </p>
     </div>
   );
