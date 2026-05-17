@@ -1,0 +1,88 @@
+{
+  "theme": {
+    "mode": "light",
+    "archetype": "Soft Utility (Swiss + Organic Admin Hybrid)",
+    "description": "A modern evolution of the legacy Biofood dashboard. Clean, high-trust, dense, and accessible. Uses deep cobalt/slate navy for structure and crisp white for content, meeting the user's request for a 'modern evolution' of their blue/white UI."
+  },
+  "colors": {
+    "background": "#F8FAFC",
+    "surface": "#FFFFFF",
+    "surface_secondary": "#F1F5F9",
+    "sidebar_primary": "#0F172A",
+    "sidebar_secondary": "#1E293B",
+    "primary": "#2563EB",
+    "primary_hover": "#1D4ED8",
+    "text_primary": "#0F172A",
+    "text_secondary": "#64748B",
+    "border": "#E2E8F0",
+    "status": {
+      "danger": "#EF4444",
+      "warning": "#F59E0B",
+      "success": "#10B981",
+      "info": "#3B82F6"
+    }
+  },
+  "typography": {
+    "heading_font": "Work Sans",
+    "body_font": "IBM Plex Sans",
+    "mono_font": "JetBrains Mono",
+    "scale": {
+      "h1": "text-3xl sm:text-4xl tracking-tight font-semibold text-slate-900",
+      "h2": "text-2xl sm:text-3xl tracking-tight font-semibold text-slate-900",
+      "h3": "text-xl sm:text-2xl font-medium text-slate-800",
+      "h4": "text-lg font-medium text-slate-800",
+      "body": "text-base leading-relaxed text-slate-600",
+      "small": "text-sm text-slate-500",
+      "overline": "text-xs uppercase tracking-[0.2em] font-semibold text-slate-500"
+    }
+  },
+  "layout": {
+    "spacing_scale": "Tailwind defaults, emphasizing generous padding (p-6) inside cards to prevent text collision with borders.",
+    "grid_system": "Control Room Grid (grid-cols-1 md:grid-cols-3 lg:grid-cols-4) with gap-4 or gap-6. Dense data utility.",
+    "sidebar": "Dark mode left sidebar (w-64, bg-slate-900) with lighter nested secondary nav (bg-slate-800) if needed, off-white (bg-slate-50) main content background.",
+    "cards": "Flat white background, 1px border (border-slate-200), no default shadow. Hover: slight lift (-translate-y-0.5) and shadow-sm. Use rounded-xl for a modern SaaS feel."
+  },
+  "components": {
+    "buttons": "Shadcn based. Primary buttons use bg-blue-600 with text-white. Fully rounded (rounded-md).",
+    "tables": "Shadcn Table. Subtle border-b. Left-aligned data. Mono font for numbers and IDs.",
+    "charts": "Shadcn Charts (Recharts). Line charts for balance predictions (planifications), Bar charts for package revenue. Traffic-light colored markers for allergen/risk levels.",
+    "alerts": "Shadcn Alert or Sonner Toast for immediate bot/allergen triggers. Red/Amber borders for high-risk alerts."
+  },
+  "motion": {
+    "transitions": "transition-all duration-200 ease-in-out",
+    "hover_effects": "Cards subtly lift and gain shadow. Rows in tables gain faint background color (hover:bg-slate-50).",
+    "page_load": "Staggered fade-in for dashboard grid items."
+  },
+  "media": {
+    "image_urls": [
+      {
+        "url": "https://images.unsplash.com/photo-1675270690434-aa99f4871e8a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwyfHxudXRyaXRpb25pc3QlMjBleHBlcnQlMjBwb3J0cmFpdHxlbnwwfHx8fDE3Nzg5Nzc2OTF8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Admin Profile",
+        "description": "Nutritionist admin profile picture"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1585358682246-23acb1561f6b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHxudXRyaXRpb25pc3QlMjBleHBlcnQlMjBwb3J0cmFpdHxlbnwwfHx8fDE3Nzg5Nzc2OTF8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Parent/Bot User Profile",
+        "description": "WhatsApp user avatar placeholder"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1588075592806-bbe6da990469?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwc2Nob29sJTIwbHVuY2glMjBraWRzfGVufDB8fHx8MTc3ODk3NzY5MXww&ixlib=rb-4.1.0&q=85",
+        "category": "Empty Feed",
+        "description": "Children eating healthy school lunch - for empty alert feed background or onboarding"
+      }
+    ]
+  },
+  "accessibility": {
+    "contrast": "Ensure all text meets APCA guidelines. White text on primary blue has >4.5:1 contrast. Muted text must not go lighter than slate-500 on white.",
+    "testing": "All interactive elements MUST use data-testid attributes (e.g., data-testid='sidebar-nav-alerts', data-testid='kpi-card-revenue')."
+  },
+  "icons": "lucide-react (default) with standard 20px sizes for sidebar, 16px for inline text.",
+  "instructions_to_main_agent": [
+    "Install and use 'Work Sans' for headings and 'IBM Plex Sans' for body text from Google Fonts.",
+    "Implement a deep blue (bg-slate-900) left sidebar matching the legacy Biofood identity but modernized into a 2026 SaaS aesthetic.",
+    "Use Shadcn UI extensively for the Data Grid, Cards, and Tables. Do not build complex interactive components from scratch.",
+    "Use the Control Room Grid pattern for the main dashboard layout (tight gaps, high density, 100% height utilization for cards).",
+    "Integrate the provided avatars for the Activity Feed and User Profile.",
+    "Ensure all buttons, form inputs, and interactive charts have 'data-testid' tags. This is CRITICAL."
+  ]
+}
