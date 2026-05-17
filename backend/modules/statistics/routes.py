@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Query
 from typing import Optional
 from modules.statistics import service as svc
+from modules.statistics import b2b_service as b2b_svc
 
 router = APIRouter(prefix="/statistics", tags=["statistics"])
 
@@ -40,3 +41,9 @@ async def get_benchmark(nit_colegio: str = Query(...)):
 async def get_score(nit_colegio: str = Query(...)):
     score = await svc.school_score(nit_colegio)
     return {"nit_colegio": nit_colegio, "score": score}
+
+
+@router.get("/b2b")
+async def get_b2b_report(days: int = 90):
+    return await b2b_svc.full_b2b_report(days)
+

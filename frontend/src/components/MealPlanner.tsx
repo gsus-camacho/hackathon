@@ -88,9 +88,27 @@ export const MealPlanner: React.FC<{ apiBase: string }> = ({ apiBase }) => {
     setAllergenWarning(null);
     try {
       const data = await clientPost(apiBase, `/planifications/plans/${plan.id}/items`, newItem);
-      setPlan(data);
+      // Merge locally: if API returned a plan with fewer items than we already have + 1,
+      // it means the fallback didn't preserve existing items — so we merge ourselves.
+      const existingCount = plan.items.length;
+      const returnedCount = data?.items?.length ?? 0;
+      if (returnedCount <= existingCount && existingCount > 0) {
+        // Demo fallback — merge new item into existing plan
+        const updatedItems = [...plan.items, { ...newItem }];
+        const newTotal = updatedItems.reduce((sum, it) => sum + it.unit_price * it.quantity, 0);
+        const goalMet = newTotal >= plan.minimum_budget;
+        setPlan({
+          ...plan,
+          items: updatedItems,
+          current_total: newTotal,
+          goal_met: goalMet,
+        });
+      } else {
+        // Real API — use returned data as-is
+        setPlan(data);
+      }
       setNewItem({ day: 0, product_name: "", quantity: 1, unit_price: 0 });
-      if (data._allergen_warning) {
+      if (data?._allergen_warning) {
         setAllergenWarning(`Producto compatible, pero revisa: ${data._allergen_warning.join(", ")}`);
       }
     } catch (err: any) {
@@ -108,11 +126,24 @@ export const MealPlanner: React.FC<{ apiBase: string }> = ({ apiBase }) => {
     if (!plan) return;
     setAllergenError(null);
     setAllergenWarning(null);
+    // Optimistic local removal
+    const updatedItems = plan.items.filter((_, i) => i !== idx);
+    const newTotal = updatedItems.reduce((sum, it) => sum + it.unit_price * it.quantity, 0);
+    const goalMet = newTotal >= plan.minimum_budget;
+    setPlan({
+      ...plan,
+      items: updatedItems,
+      current_total: newTotal,
+      goal_met: goalMet,
+    });
     try {
       const data = await clientDelete(apiBase, `/planifications/plans/${plan.id}/items/${idx}`);
-      setPlan(data as MealPlan);
-    } catch (err) {
-      setAllergenError("Error al eliminar producto.");
+      // If API returned a valid plan with correct items, use it
+      if (data && (data as MealPlan).items && (data as MealPlan).items.length === updatedItems.length) {
+        setPlan(data as MealPlan);
+      }
+    } catch {
+      // Keep optimistic local state — already updated above
     }
   };
 

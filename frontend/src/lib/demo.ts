@@ -403,6 +403,25 @@ export function demoFallback(path: string) {
   }
   if (pathname === "/feedback/products") return sampleFeedbackProducts;
   if (pathname === "/feedback/summary") return feedbackSummary;
+  if (pathname === "/statistics/b2b") {
+    const benchmarkProducts = sampleTopProducts.slice(0, 8).map((p, i) => {
+      const medianUnits = sampleTopProducts.reduce((s, x) => s + x.units, 0) / sampleTopProducts.length;
+      const delta = Math.round(((p.units - medianUnits) / medianUnits) * 100);
+      return { product: p.name, total_units: p.units, total_revenue: p.revenue, schools_selling: 5 + i, avg_unit_price: Math.round(p.revenue / p.units), delta };
+    });
+    const satisfactionList = sampleFeedbackProducts.map((f) => {
+      const si = f.total > 0 ? Math.round((f.up / f.total) * 100) / 100 : 0;
+      return { product: f.product_name, si, action: si >= 0.75 ? "Mantener" as const : si >= 0.50 ? "Revisar" as const : "Descontinuar" as const, up: f.up, down: f.down, total_votes: f.total };
+    }).sort((a, b) => b.si - a.si);
+    const siValues = satisfactionList.filter((s) => s.total_votes > 0).map((s) => s.si);
+    const avgSi = siValues.length ? Math.round((siValues.reduce((s, v) => s + v, 0) / siValues.length) * 100) / 100 : 0;
+    return {
+      benchmark: benchmarkProducts,
+      satisfaction: satisfactionList,
+      summary: { total_schools: sampleSchools.length, total_records: 184_320, total_students: 1_247, total_products: 12, total_revenue: 21_303_000, avg_si: avgSi, days: 90 },
+      schools: sampleSchools.map((s, i) => ({ ...s, total_revenue: 3_200_000 - i * 320_000, total_transactions: 2_400 - i * 180, revenue_per_student: Math.round((3_200_000 - i * 320_000) / s.total_students) })),
+    };
+  }
 
   return [];
 }
