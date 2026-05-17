@@ -15,7 +15,7 @@
     "@astrojs/react": "^3.6.3",
     "@astrojs/tailwind": "^5.1.4",
     "@astrojs/vercel": "^10.0.7",
-    "astro": "^4.16.18",
+    "astro": "^6.3.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",
