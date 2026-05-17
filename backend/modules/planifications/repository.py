@@ -127,50 +127,63 @@ async def count_students_at_risk(nit_colegio: Optional[str] = None) -> int:
 
 
 async def list_students_at_risk_fast(nit_colegio: Optional[str] = None, limit: int = 50) -> List[Dict]:
-    """Lighter version using sample of recent activity instead of full aggregation."""
+    """Lightweight: list of students with consumption in last 14 days but no recharge in last 30 days."""
     if nit_colegio:
         q = """
-            WITH recent AS (
-              SELECT DISTINCT ON (usuario_identificacion)
-                     usuario_identificacion, nombre_estudiante, nit_colegio, fecha::date AS last_consumption
-              FROM hackaton_ventas
-              WHERE nit_colegio=$1 AND fecha::date >= CURRENT_DATE - 30
-              ORDER BY usuario_identificacion, fecha DESC
-            )
-            SELECT r.*,
-                   COALESCE((SELECT SUM(valor) FROM hackaton_recargas WHERE usuario_identificacion=r.usuario_identificacion), 0) AS total_recargas,
-                   COALESCE((SELECT SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)) FROM hackaton_ventas WHERE usuario_identificacion=r.usuario_identificacion), 0) AS total_consumo,
-                   (SELECT MAX(fecha) FROM hackaton_recargas WHERE usuario_identificacion=r.usuario_identificacion) AS last_recharge
-            FROM recent r
-            WHERE NOT EXISTS (
-              SELECT 1 FROM hackaton_recargas rr
-              WHERE rr.usuario_identificacion = r.usuario_identificacion
-                AND rr.fecha >= CURRENT_DATE - 30
-            )
+            SELECT v.usuario_identificacion,
+                   MAX(v.nombre_estudiante) AS nombre_estudiante,
+                   MAX(v.nit_colegio) AS nit_colegio,
+                   MAX(v.fecha::date) AS last_consumption
+            FROM hackaton_ventas v
+            WHERE v.nit_colegio = $1
+              AND v.fecha::date >= CURRENT_DATE - 14
+              AND NOT EXISTS (
+                SELECT 1 FROM hackaton_recargas r
+                WHERE r.usuario_identificacion = v.usuario_identificacion
+                  AND r.fecha >= CURRENT_DATE - 30
+              )
+            GROUP BY v.usuario_identificacion
+            ORDER BY last_consumption DESC
             LIMIT $2
         """
-        return await fetch_all(q, nit_colegio, limit)
-    q = """
-        WITH recent AS (
-          SELECT DISTINCT ON (usuario_identificacion)
-                 usuario_identificacion, nombre_estudiante, nit_colegio, fecha::date AS last_consumption
-          FROM hackaton_ventas
-          WHERE fecha::date >= CURRENT_DATE - 30
-          ORDER BY usuario_identificacion, fecha DESC
+        rows = await fetch_all(q, nit_colegio, limit)
+    else:
+        q = """
+            SELECT v.usuario_identificacion,
+                   MAX(v.nombre_estudiante) AS nombre_estudiante,
+                   MAX(v.nit_colegio) AS nit_colegio,
+                   MAX(v.fecha::date) AS last_consumption
+            FROM hackaton_ventas v
+            WHERE v.fecha::date >= CURRENT_DATE - 14
+              AND NOT EXISTS (
+                SELECT 1 FROM hackaton_recargas r
+                WHERE r.usuario_identificacion = v.usuario_identificacion
+                  AND r.fecha >= CURRENT_DATE - 30
+              )
+            GROUP BY v.usuario_identificacion
+            ORDER BY last_consumption DESC
+            LIMIT $1
+        """
+        rows = await fetch_all(q, limit)
+    # Enrich a small subset with totals
+    enriched = []
+    for r in rows:
+        uid = r["usuario_identificacion"]
+        consumo_row = await fetch_one(
+            "SELECT COALESCE(SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)), 0) AS total FROM hackaton_ventas WHERE usuario_identificacion=$1",
+            uid,
         )
-        SELECT r.*,
-               COALESCE((SELECT SUM(valor) FROM hackaton_recargas WHERE usuario_identificacion=r.usuario_identificacion), 0) AS total_recargas,
-               COALESCE((SELECT SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)) FROM hackaton_ventas WHERE usuario_identificacion=r.usuario_identificacion), 0) AS total_consumo,
-               (SELECT MAX(fecha) FROM hackaton_recargas WHERE usuario_identificacion=r.usuario_identificacion) AS last_recharge
-        FROM recent r
-        WHERE NOT EXISTS (
-          SELECT 1 FROM hackaton_recargas rr
-          WHERE rr.usuario_identificacion = r.usuario_identificacion
-            AND rr.fecha >= CURRENT_DATE - 30
+        recargas_row = await fetch_one(
+            "SELECT COALESCE(SUM(valor), 0) AS total, MAX(fecha) AS last_recharge FROM hackaton_recargas WHERE usuario_identificacion=$1",
+            uid,
         )
-        LIMIT $1
-    """
-    return await fetch_all(q, limit)
+        enriched.append({
+            **r,
+            "total_consumo": float(consumo_row["total"]) if consumo_row else 0.0,
+            "total_recargas": float(recargas_row["total"]) if recargas_row else 0.0,
+            "last_recharge": recargas_row.get("last_recharge") if recargas_row else None,
+        })
+    return enriched
 
 
 async def search_students(query: str, limit: int = 20) -> List[Dict]:

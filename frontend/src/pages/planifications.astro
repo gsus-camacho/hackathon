@@ -1,11 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import AtRiskTable from "../components/AtRiskTable.tsx";
-import Card from "../components/Card.tsx";
-import { serverGet, formatNumber } from "../lib/api";
-
-let atRisk: any[] = [];
-try { atRisk = await serverGet("/planifications/at-risk?limit=50"); } catch {}
+import AtRiskLoader from "../components/AtRiskLoader.tsx";
+import { PUBLIC_BACKEND_URL } from "../lib/api";
 ---
 <Layout title="Planificaciones" active="planifications" description="Balance prediction">
   <div class="mb-6 flex items-end justify-between">
@@ -13,7 +9,6 @@ try { atRisk = await serverGet("/planifications/at-risk?limit=50"); } catch {}
       <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Planificaciones</h1>
       <p class="text-bio-500 text-sm mt-1">Predicción de saldo y estudiantes en riesgo.</p>
     </div>
-    <div class="text-xs font-mono text-bio-500">{formatNumber(atRisk.length)} estudiantes mostrados</div>
   </div>
-  <AtRiskTable students={atRisk} client:visible />
+  <AtRiskLoader apiBase={PUBLIC_BACKEND_URL} client:load />
 </Layout>
