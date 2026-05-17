@@ -102,7 +102,7 @@ async def _send_allergen_alerts(days: int = 1) -> List[Dict]:
         purchases = await stats_repo.get_student_recent_purchases(usuario, days=days, limit=20)
         for purchase in purchases:
             matched = await rec_svc.check_allergen_risk(usuario, purchase["product"])
-            if matched.get("risk"):
+            if matched:
                 try:
                     sent.append(
                         await send_allergen_alert(
@@ -110,7 +110,7 @@ async def _send_allergen_alerts(days: int = 1) -> List[Dict]:
                             parent=child.get("nombre_padre") or "Padre/Madre",
                             student=child.get("nombre_estudiante") or "Estudiante",
                             product=purchase["product"],
-                            allergens=matched.get("matched", []),
+                            allergens=matched,
                         )
                     )
                 except Exception as e:
@@ -153,6 +153,63 @@ async def _send_weekly_nutrition_report() -> List[Dict]:
         except Exception as e:
             logger.error("Weekly nutrition report failed for %s: %s", usuario, e)
     return reports
+
+
+async def _send_no_consumption_alerts() -> List[Dict]:
+    """12:00 PM — estudiantes activos sin compra hoy."""
+    from core.postgres import fetch_all
+
+    sent = []
+    q = """
+        SELECT DISTINCT v.usuario_identificacion, v.nombre_estudiante
+        FROM hackaton_ventas v
+        WHERE v.fecha::date >= CURRENT_DATE - 7
+          AND NOT EXISTS (
+            SELECT 1 FROM hackaton_ventas t
+            WHERE t.usuario_identificacion = v.usuario_identificacion
+              AND t.fecha::date = CURRENT_DATE
+          )
+        LIMIT 40
+    """
+    try:
+        rows = await fetch_all(q)
+    except Exception as e:
+        logger.error("no_consumption query failed: %s", e)
+        return sent
+
+    for row in rows:
+        uid = row["usuario_identificacion"]
+        child = await hijos_repo.get_by_usuario(uid)
+        if not child or not child.get("parent_phone"):
+            continue
+        body = (
+            f"🍽️ *BioAlert+ — Sin consumo al mediodía*\n\n"
+            f"{child.get('nombre_estudiante', 'Tu hijo')} aún no ha registrado compras hoy.\n"
+            f"¿Todo bien? Responde si necesitas ayuda con el saldo o el menú."
+        )
+        try:
+            sent.append(
+                await send_text(
+                    SendMessageRequest(
+                        to=child["parent_phone"],
+                        body=body,
+                        kind="no_consumption",
+                        recipient_name=child.get("nombre_padre"),
+                        usuario_identificacion=uid,
+                        identificacion_padre=child.get("identificacion_padre"),
+                    )
+                )
+            )
+        except Exception as e:
+            logger.error("no_consumption alert failed %s: %s", uid, e)
+    return sent
+
+
+async def _send_consumption_rating_requests(minutes: int = 25) -> List[Dict]:
+    """Micro-rating post-consumo (Pilar 1 → 3)."""
+    from modules.feedback import service as fb_svc
+
+    return await fb_svc.send_consumption_rating_requests(minutes=minutes)
 
 
 # ----- Inbound conversation handler -----
@@ -258,6 +315,24 @@ async def detect_intent(message: str) -> Dict:
     return simple_intent_detection(message)
 
 
+async def _handle_product_approval_reply(identificacion_padre: Optional[str], body: str) -> Optional[str]:
+    msg = body.strip().upper()
+    if msg not in ("BLOQUEAR", "PERMITIR", "BLOQUEA", "PERMITE", "BLOCK", "ALLOW"):
+        return None
+    if not identificacion_padre:
+        return "Envía tu número de cédula como acudiente para procesar la solicitud."
+    from modules.approvals import service as approval_svc
+
+    decision = "allow" if msg in ("PERMITIR", "PERMITE", "ALLOW") else "block"
+    result = await approval_svc.resolve_for_parent(identificacion_padre, decision)
+    if not result:
+        return "No hay productos pendientes de aprobación."
+    product = result.get("product_name", "el producto")
+    if decision == "allow":
+        return f"✅ *{product}* permitido para el plan de tu hijo."
+    return f"⛔ *{product}* bloqueado y removido del plan semanal."
+
+
 async def handle_incoming(phone: str, body: str, profile_name: Optional[str] = None) -> str:
     # Find session
     session = await repo.get_session_by_phone(phone) or {
@@ -269,23 +344,34 @@ async def handle_incoming(phone: str, body: str, profile_name: Optional[str] = N
     if identificacion_padre and identificacion_padre != session.get("identificacion_padre"):
         session["identificacion_padre"] = identificacion_padre
 
-    intent_data = await detect_intent(body)
-    intent = intent_data.get("intent", "unknown")
-
-    if intent == "consumption":
-        reply = await _student_consumption_summary(identificacion_padre)
-        if reply.startswith("No se encuentra"):
-            reply = "Hola 👋 puedes decirme el número de cédula del padre o preguntar: ¿qué comió mi hijo hoy?"
-    elif intent == "balance":
-        reply = await _student_balance_summary(identificacion_padre)
-    elif intent == "package":
-        reply = await _package_suggestions(identificacion_padre)
-    elif intent == "alerts":
-        reply = await _alert_context(identificacion_padre)
-    elif intent == "greeting":
-        reply = "Hola 👋 soy BioBot de BioAlert+. Pregúntame por 'consumo', 'saldo', 'paquetes' o 'alertas'."
+    approval_reply = await _handle_product_approval_reply(identificacion_padre, body)
+    if approval_reply:
+        reply = approval_reply
+        intent = "product_approval"
     else:
-        reply = "Hola 👋 puedo ayudarte a ver saldo, recomendaciones de paquetes y alertas de alérgenos. Escribe 'saldo' o 'paquetes'."
+        from modules.feedback import service as fb_svc
+
+        rating_reply = await fb_svc.try_whatsapp_rating(phone, body, identificacion_padre)
+        if rating_reply:
+            reply = rating_reply
+            intent = "micro_rating"
+        else:
+            intent_data = await detect_intent(body)
+            intent = intent_data.get("intent", "unknown")
+            if intent == "consumption":
+                reply = await _student_consumption_summary(identificacion_padre)
+                if reply.startswith("No se encuentra"):
+                    reply = "Hola 👋 puedes decirme el número de cédula del padre o preguntar: ¿qué comió mi hijo hoy?"
+            elif intent == "balance":
+                reply = await _student_balance_summary(identificacion_padre)
+            elif intent == "package":
+                reply = await _package_suggestions(identificacion_padre)
+            elif intent == "alerts":
+                reply = await _alert_context(identificacion_padre)
+            elif intent == "greeting":
+                reply = "Hola 👋 soy BioBot de BioAlert+. Pregúntame por 'consumo', 'saldo', 'paquetes' o 'alertas'."
+            else:
+                reply = "Hola 👋 puedo ayudarte a ver saldo, recomendaciones de paquetes y alertas de alérgenos. Escribe 'saldo' o 'paquetes'."
 
     if intent in ["consumption", "balance"] and "saldo" not in reply.lower() and len(reply) < 30:
         reply = reply + "\nTambién puedes preguntar: '¿qué comió mi hijo hoy?'"
@@ -300,22 +386,6 @@ async def handle_incoming(phone: str, body: str, profile_name: Optional[str] = N
     })
     await repo.upsert_session(session)
 
-    try:
-        if not phone.startswith("whatsapp:test"):
-            send_resp = send_whatsapp_text(phone, reply)
-            notif = Notification(
-                kind="custom",
-                recipient_phone=phone,
-                message=reply,
-                twilio_sid=send_resp["sid"],
-                status=send_resp["status"],
-            )
-            await repo.insert_notification(notif.model_dump())
-    except Exception as e:
-        logger.error("Failed to send WhatsApp reply: %s", e)
-    return reply
-
-    # Save outbound
     try:
         if not phone.startswith("whatsapp:test"):
             send_resp = send_whatsapp_text(phone, reply)

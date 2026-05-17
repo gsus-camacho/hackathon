@@ -1,14 +1,21 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card.tsx";
 import InboxPanel from "../components/InboxPanel.tsx";
+import NotificationTriggersPanel from "../components/NotificationTriggersPanel.tsx";
 import { PUBLIC_BACKEND_URL } from "../lib/api";
 ---
-<Layout title="Notificaciones" active="notifications" description="Movement history">
-  <div class="mb-6">
+<Layout title="Notificaciones" active="notifications" description="Triggers automáticos">
+  <header class="mb-6">
     <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Notificaciones</h1>
     <p class="text-bio-500 text-sm mt-1">
-      Historial de movimientos enviados a padres por WhatsApp — alertas de saldo, alergenos, paquetes y reportes.
+      Ejecuta los automatismos del pitch: saldo bajo, sin consumo al mediodía, micro-ratings y reporte semanal.
     </p>
-  </div>
+  </header>
+
+  <Card title="Triggers del sistema" description="También corren en background cada ~15 min (server)" className="mb-6">
+    <NotificationTriggersPanel apiBase={PUBLIC_BACKEND_URL} client:load />
+  </Card>
+
   <InboxPanel apiBase={PUBLIC_BACKEND_URL} client:load />
 </Layout>

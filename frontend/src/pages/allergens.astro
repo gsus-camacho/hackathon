@@ -6,12 +6,12 @@ import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
 let allergens: any[] = [];
 try { allergens = await serverGet("/recommendations/allergens"); } catch {}
 ---
-<Layout title="Alergenos" active="allergens" description="Safety intelligence">
-  <div class="mb-6">
-    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Perfiles de alergenos</h1>
+<Layout title="Preferencias" active="allergens" description="Pilar 02 · Seguridad nutricional">
+  <header class="mb-6">
+    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Preferencias Alimentarias</h1>
     <p class="text-bio-500 text-sm mt-1">
-      Registra alergenos para activar alertas automáticas a padres cuando se intente vender productos riesgosos.
+      Perfil unificado de alérgenos y regímenes. Bloqueo en planificaciones + análisis Gemini si el padre no responde.
     </p>
-  </div>
+  </header>
   <AllergenManager apiBase={PUBLIC_BACKEND_URL} initial={allergens} client:load />
 </Layout>

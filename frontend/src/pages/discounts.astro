@@ -1,6 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PackageList from "../components/PackageList.tsx";
+import CatalogProductForm from "../components/CatalogProductForm.tsx";
+import ProductApprovalsPanel from "../components/ProductApprovalsPanel.tsx";
+import Card from "../components/Card.tsx";
 import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
 
 let pkgs: any[] = [];
@@ -9,11 +12,18 @@ try {
 } catch {}
 ---
 <Layout title="Paquetes Dinámicos" active="discounts" description="Pilar 01 · Flujo de caja anticipado">
-  <div class="mb-6">
+  <header class="mb-6">
     <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Paquetes Dinámicos</h1>
     <p class="text-bio-500 text-sm mt-1">
-      Paquetes semanales y mensuales con incentivo configurable por la cafetería. Capital anticipado + optimización de inventario.
+      Paquetes semanales/mensuales, productos nuevos con aprobación parental y micro-ratings por WhatsApp.
     </p>
-  </div>
+  </header>
+
+  <CatalogProductForm apiBase={PUBLIC_BACKEND_URL} client:load />
+
+  <Card title="Cola de aprobación parental" description="PERMITIR / BLOQUEAR vía WhatsApp o desde aquí" className="mb-6">
+    <ProductApprovalsPanel apiBase={PUBLIC_BACKEND_URL} client:load />
+  </Card>
+
   <PackageList apiBase={PUBLIC_BACKEND_URL} initial={pkgs} client:load />
 </Layout>

@@ -1,14 +1,26 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card.tsx";
 import MealPlanner from "../components/MealPlanner.tsx";
-import { PUBLIC_BACKEND_URL } from "../lib/api";
+import AtRiskTable from "../components/AtRiskTable.tsx";
+import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
+
+let atRisk: any[] = [];
+try {
+  atRisk = await serverGet("/planifications/at-risk?limit=8");
+} catch {}
 ---
-<Layout title="Planificaciones" active="planifications" description="Weekly meal scheduling">
-  <div class="mb-6">
+<Layout title="Planificaciones" active="planifications" description="Plan semanal + recompensa">
+  <header class="mb-6">
     <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Planificaciones semanales</h1>
     <p class="text-bio-500 text-sm mt-1">
-      Asigna productos a cada hijo durante la semana. Al alcanzar el presupuesto mínimo, se desbloquea una recompensa.
+      Generación filtrada por alérgenos, validación Gemini al añadir ítems y notificación WhatsApp al padre.
     </p>
-  </div>
+  </header>
+
+  <Card title="Estudiantes en riesgo de saldo cero" className="mb-6">
+    <AtRiskTable students={atRisk} client:visible />
+  </Card>
+
   <MealPlanner apiBase={PUBLIC_BACKEND_URL} client:load />
 </Layout>

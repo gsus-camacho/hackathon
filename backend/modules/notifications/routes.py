@@ -70,6 +70,26 @@ async def trigger_weekly_report():
     return await svc._send_weekly_nutrition_report()
 
 
+@router.post("/trigger/no-consumption")
+async def trigger_no_consumption():
+    alerts = await svc._send_no_consumption_alerts()
+    return {"sent": len(alerts), "alerts": alerts}
+
+
+@router.post("/trigger/consumption-ratings")
+async def trigger_consumption_ratings(minutes: int = 25):
+    sent = await svc._send_consumption_rating_requests(minutes=minutes)
+    return {"sent": len(sent), "requests": sent}
+
+
+@router.post("/trigger/process-approvals")
+async def trigger_process_approvals(limit: int = 30):
+    from modules.approvals import service as approval_svc
+
+    processed = await approval_svc.process_expired(limit=limit)
+    return {"processed": len(processed), "items": processed}
+
+
 @router.post("/whatsapp/webhook", response_class=PlainTextResponse)
 async def webhook(
     From: str = Form(...),

@@ -403,6 +403,19 @@ export function demoFallback(path: string) {
   }
   if (pathname === "/feedback/products") return sampleFeedbackProducts;
   if (pathname === "/feedback/summary") return feedbackSummary;
+  if (pathname === "/approvals/pending") {
+    return [
+      {
+        id: "ap-demo-1",
+        product_name: "Brownie de chocolate",
+        nombre_estudiante: "Tomás R.",
+        status: "pending",
+        source: "catalog_new",
+        unit_price: 4500,
+        created_at: new Date().toISOString(),
+      },
+    ];
+  }
   if (pathname === "/statistics/b2b") {
     const benchmarkProducts = sampleTopProducts.slice(0, 8).map((p, i) => {
       const medianUnits = sampleTopProducts.reduce((s, x) => s + x.units, 0) / sampleTopProducts.length;
@@ -431,6 +444,15 @@ export function demoPostFallback(path: string, body?: any) {
   let pathname = url.pathname;
   if (pathname.startsWith("/api")) pathname = pathname.slice(4);
 
+  if (pathname.startsWith("/approvals/") && pathname.endsWith("/resolve")) {
+    return { id: "ap-demo-1", status: body?.decision === "block" ? "blocked" : "allowed", product_name: "Brownie de chocolate" };
+  }
+  if (pathname === "/approvals/catalog/products") {
+    return { catalog: { product_name: body?.product_name }, approvals_created: 3, approvals: [] };
+  }
+  if (pathname.startsWith("/notifications/trigger/")) {
+    return { sent: 1, processed: 1, alerts: [{}] };
+  }
   if (pathname === "/recommendations/generate") return sampleRecommendations;
   if (pathname === "/discounts/packages/generate") return samplePackages;
   if (pathname === "/notifications/send") {

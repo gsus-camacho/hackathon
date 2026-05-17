@@ -6,12 +6,12 @@ import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
 let recs: any[] = [];
 try { recs = await serverGet("/recommendations/"); } catch {}
 ---
-<Layout title="Recomendaciones IA" active="recommendations" description="Gemini-powered insights">
-  <div class="mb-6">
+<Layout title="Recomendaciones IA" active="recommendations" description="Gemini">
+  <header class="mb-6">
     <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Recomendaciones IA</h1>
     <p class="text-bio-500 text-sm mt-1">
-      Insights accionables generados con Gemini 3 Flash sobre datos reales de la red.
+      Gemini analiza productos nuevos y genera insights de revenue, nutrición y seguridad.
     </p>
-  </div>
+  </header>
   <RecommendationsPanel apiBase={PUBLIC_BACKEND_URL} initial={recs} client:load />
 </Layout>

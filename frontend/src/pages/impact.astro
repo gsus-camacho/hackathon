@@ -1,0 +1,55 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card.tsx";
+import MarketRiskPanel from "../components/pitch/MarketRiskPanel.tsx";
+import EcosystemArchitecture from "../components/pitch/EcosystemArchitecture.tsx";
+import ProjectionKpis from "../components/pitch/ProjectionKpis.tsx";
+import PillarsOverview from "../components/pitch/PillarsOverview.tsx";
+import SemanticColorLegend from "../components/pitch/SemanticColorLegend.tsx";
+import { serverGet, formatNumber } from "../lib/api";
+
+let kpis: any = {};
+try {
+  kpis = await serverGet("/statistics/kpis");
+} catch {}
+const recordsM = 7.2;
+---
+<Layout title="Impacto" active="impact" description="Pitch · diagnóstico y proyección">
+  <header class="mb-6 animate-fade-up">
+    <span class="text-[10px] uppercase tracking-[0.22em] font-mono text-bio-500">BioAlert+ Pitch</span>
+    <h1 class="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-bio-900 mt-2">
+      De activo estático a ecosistema de retención
+    </h1>
+    <p class="text-bio-500 text-sm mt-2 max-w-3xl">
+      Vista ejecutiva alineada al pitch operativo: diagnóstico de mercado, arquitectura de tres interfaces y KPIs de impacto.
+      Red activa: <strong class="text-bio-800 font-mono">{formatNumber(kpis.total_students || 0)}</strong> estudiantes monitoreados.
+    </p>
+  </header>
+
+  <section class="mb-8">
+    <h2 class="font-heading text-xl font-semibold text-bio-900 mb-4">Diagnóstico · Riesgo estructural</h2>
+    <MarketRiskPanel client:visible />
+  </section>
+
+  <section class="mb-8">
+    <h2 class="font-heading text-xl font-semibold text-bio-900 mb-4">Arquitectura · Extender, no reemplazar</h2>
+    <EcosystemArchitecture client:visible />
+  </section>
+
+  <section class="mb-8">
+    <h2 class="font-heading text-xl font-semibold text-bio-900 mb-4">Los tres pilares</h2>
+    <PillarsOverview client:visible />
+  </section>
+
+  <section class="mb-8">
+    <h2 class="font-heading text-xl font-semibold text-bio-900 mb-2">Proyección de impacto</h2>
+    <p class="text-sm text-bio-500 mb-4">
+      Fundamentada en dinámicas de e-commerce prepago — sobre <strong>{recordsM}M</strong> registros transaccionales históricos.
+    </p>
+    <ProjectionKpis client:visible />
+  </section>
+
+  <Card title="Sistema visual" description="Cohesión sobre identidad Biofood existente">
+    <SemanticColorLegend client:visible />
+  </Card>
+</Layout>

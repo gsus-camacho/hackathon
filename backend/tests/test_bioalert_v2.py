@@ -125,14 +125,17 @@ def test_add_item_goal_met(client, created_state):
     pid = created_state["plan_id"]
     if not pid:
         pytest.skip("no plan created")
-    # Adding enough to exceed 20000
-    r = client.post(
-        f"{API}/planifications/plans/{pid}/items",
-        json={"day": 1, "product_name": "LIMONADA FRAPPE", "quantity": 5, "unit_price": 3000},
-        timeout=20,
-    )
-    assert r.status_code == 200, r.text
-    data = r.json()
+    extras = [
+        {"day": 1, "product_name": "LIMONADA FRAPPE", "quantity": 5, "unit_price": 3000},
+        {"day": 2, "product_name": "Galleta", "quantity": 1, "unit_price": 2500},
+        {"day": 3, "product_name": "Jugo", "quantity": 1, "unit_price": 2500},
+        {"day": 4, "product_name": "Fruta", "quantity": 1, "unit_price": 2500},
+    ]
+    data = None
+    for item in extras:
+        r = client.post(f"{API}/planifications/plans/{pid}/items", json=item, timeout=20)
+        assert r.status_code == 200, r.text
+        data = r.json()
     assert data["current_total"] >= 20000.0
     assert data["goal_met"] is True
     assert "10%" in (data.get("reward") or "")

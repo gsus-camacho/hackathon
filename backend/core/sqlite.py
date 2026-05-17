@@ -56,6 +56,9 @@ async def _create_tables() -> None:
         "CREATE TABLE IF NOT EXISTS meal_plans (id TEXT PRIMARY KEY, data TEXT NOT NULL, created_at TEXT, updated_at TEXT)",
         "CREATE TABLE IF NOT EXISTS hijos (id TEXT PRIMARY KEY, data TEXT NOT NULL, created_at TEXT, updated_at TEXT)",
         "CREATE TABLE IF NOT EXISTS product_votes (id TEXT PRIMARY KEY, data TEXT NOT NULL, created_at TEXT, updated_at TEXT)",
+        "CREATE TABLE IF NOT EXISTS product_approvals (id TEXT PRIMARY KEY, data TEXT NOT NULL, created_at TEXT, updated_at TEXT)",
+        "CREATE TABLE IF NOT EXISTS catalog_products (id TEXT PRIMARY KEY, data TEXT NOT NULL, created_at TEXT, updated_at TEXT)",
+        "CREATE TABLE IF NOT EXISTS rating_requests (id TEXT PRIMARY KEY, data TEXT NOT NULL, created_at TEXT, updated_at TEXT)",
     ]
     for sql in table_sql:
         await _run(sql)

@@ -6,12 +6,12 @@ import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
 let products: any[] = [];
 try { products = await serverGet("/statistics/top-products?limit=18"); } catch {}
 ---
-<Layout title="Feedback" active="feedback" description="Product voting">
-  <div class="mb-6">
+<Layout title="Feedback" active="feedback" description="Micro-rating">
+  <header class="mb-6">
     <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Feedback de productos</h1>
     <p class="text-bio-500 text-sm mt-1">
-      Califica los productos con 👍 o 👎. Cada voto alimenta el ranking del catálogo del colegio.
+      Votos desde dashboard o WhatsApp (👍/👎 post-consumo). Alimentan el Satisfaction Index en Benchmark B2B.
     </p>
-  </div>
+  </header>
   <ProductFeedbackBoard apiBase={PUBLIC_BACKEND_URL} products={products} client:load />
 </Layout>

@@ -64,15 +64,13 @@ async def whatsapp_webhook(
             media_urls.append({"url": media_url, "type": media_content_type})
         logger.info(f"Media attachments: {media_urls}")
     
-    # Process the message
-    from backend.services.chatbot_service import handle_incoming_message
-    
+    from modules.notifications import service as notif_svc
+
     try:
-        response_text = await handle_incoming_message(
+        response_text = await notif_svc.handle_incoming(
             phone=from_number,
-            message=message_body,
+            body=message_body,
             profile_name=profile_name,
-            media_urls=media_urls
         )
         
         # Return Twilio ML response (empty to acknowledge)

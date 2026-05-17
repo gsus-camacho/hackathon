@@ -70,11 +70,23 @@ async def search_students(query: str, limit: int = 20) -> List[Dict]:
 
 def _compute_totals(items: List[Dict], minimum_budget: float) -> Dict:
     current_total = sum(float(i.get("unit_price", 0)) * int(i.get("quantity", 1)) for i in items)
-    goal_met = current_total >= minimum_budget and minimum_budget > 0
+    days_covered = len({int(i.get("day", 0)) for i in items})
+    item_count = len(items)
+    budget_ok = minimum_budget > 0 and current_total >= minimum_budget
+    completeness_ok = days_covered >= 3 and item_count >= 4
+    goal_met = budget_ok and completeness_ok
     reward = None
     if goal_met:
-        reward = "10% descuento próxima recarga"
-    return {"current_total": round(current_total, 2), "goal_met": goal_met, "reward": reward}
+        reward = "10% descuento próxima recarga + 1 snack promocional"
+    elif budget_ok and days_covered >= 2:
+        reward = "5% descuento al completar la semana (faltan días o ítems)"
+    return {
+        "current_total": round(current_total, 2),
+        "goal_met": goal_met,
+        "reward": reward,
+        "days_covered": days_covered,
+        "item_count": item_count,
+    }
 
 
 async def _validate_product_allergens(hijo_id: str, product_name: str) -> List[str]:
@@ -127,19 +139,23 @@ async def _notify_parent_new_product(hijo_id: str, product_name: str, unit_price
         )
         resp = send_whatsapp_text(parent_phone, body)
         logger.info(f"New product notification sent to {parent_phone}: {resp.get('status', 'sent')}")
-        # Log as notification
         try:
-            from modules.notifications.schemas import Notification
-            from modules.notifications import service as notif_svc
-            notif = Notification(
-                kind="new_plan_product",
-                recipient_phone=parent_phone,
-                usuario_identificacion=hijo.get("usuario_identificacion"),
-                message=body,
-                twilio_sid=resp.get("sid", ""),
-                status=resp.get("status", "sent"),
+            import uuid
+            from modules.notifications import repository as notif_repo
+
+            await notif_repo.insert_notification(
+                {
+                    "id": str(uuid.uuid4()),
+                    "kind": "new_plan_product",
+                    "recipient_phone": parent_phone,
+                    "identificacion_padre": identificacion_padre,
+                    "usuario_identificacion": hijo.get("usuario_identificacion"),
+                    "message": body,
+                    "twilio_sid": resp.get("sid", ""),
+                    "status": resp.get("status", "sent"),
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                }
             )
-            await notif_svc.send_text.__wrapped__(notif)
         except Exception as e:
             logger.warning(f"Could not log notification: {e}")
     except Exception as e:
@@ -292,7 +308,20 @@ async def add_item(plan_id: str, item: MealItemAdd) -> Dict:
     }
     doc = await repo.update_meal_plan(plan_id, updates)
 
-    # PILAR 1: Send WhatsApp notification to parent
+    item_index = len(items) - 1
+    try:
+        from modules.approvals import service as approval_svc
+
+        await approval_svc.create_from_plan_item(
+            hijo_id=hijo_id,
+            plan_id=plan_id,
+            plan_item_index=item_index,
+            product_name=item.product_name,
+            unit_price=item.unit_price,
+        )
+    except Exception as e:
+        logger.warning("Approval queue create failed: %s", e)
+
     await _notify_parent_new_product(
         hijo_id=hijo_id,
         product_name=item.product_name,
