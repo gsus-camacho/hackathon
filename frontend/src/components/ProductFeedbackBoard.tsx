@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ThumbsUp, ThumbsDown, Loader2 } from "lucide-react";
+import { clientGet, clientPost } from "../lib/api";
 
 interface Product { name: string; units: number; revenue: number; }
 interface Feedback { product_name: string; up: number; down: number; total: number; score_pct: number; }
@@ -9,8 +10,7 @@ export const ProductFeedbackBoard: React.FC<{ apiBase: string; products: Product
   const [busy, setBusy] = useState<string | null>(null);
 
   const refresh = async () => {
-    const res = await fetch(`${apiBase}/api/feedback/products`);
-    const data: Feedback[] = await res.json();
+    const data: Feedback[] = await clientGet(apiBase, "/feedback/products");
     const map: Record<string, Feedback> = {};
     for (const f of data) map[f.product_name] = f;
     setFeedback(map);
@@ -21,11 +21,7 @@ export const ProductFeedbackBoard: React.FC<{ apiBase: string; products: Product
   const vote = async (product: string, kind: "up" | "down") => {
     setBusy(product + kind);
     try {
-      await fetch(`${apiBase}/api/feedback/vote`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ product_name: product, vote: kind }),
-      });
+      await clientPost(apiBase, "/feedback/vote", { product_name: product, vote: kind });
       await refresh();
     } finally {
       setBusy(null);

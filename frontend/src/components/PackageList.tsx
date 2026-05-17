@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Loader2, Sparkles, Trash2 } from "lucide-react";
+import { clientDelete, clientPost } from "../lib/api";
 
 interface PackageItem { product_name: string; quantity: number; unit_price: number; }
 interface Pkg {
@@ -32,8 +33,7 @@ export const PackageList: React.FC<{ apiBase: string; initial: Pkg[] }> = ({ api
   const generate = async () => {
     setBusy(true);
     try {
-      const res = await fetch(`${apiBase}/api/discounts/packages/generate`, { method: "POST" });
-      const data: Pkg[] = await res.json();
+      const data: Pkg[] = await clientPost(apiBase, "/discounts/packages/generate");
       setPkgs((c) => [...data, ...c]);
     } finally {
       setBusy(false);
@@ -41,7 +41,7 @@ export const PackageList: React.FC<{ apiBase: string; initial: Pkg[] }> = ({ api
   };
 
   const deactivate = async (id: string) => {
-    await fetch(`${apiBase}/api/discounts/packages/${id}`, { method: "DELETE" });
+    await clientDelete(apiBase, `/discounts/packages/${id}`);
     setPkgs((c) => c.filter((p) => p.id !== id));
   };
 

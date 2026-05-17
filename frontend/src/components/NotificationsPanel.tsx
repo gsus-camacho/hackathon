@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Bell, Send } from "lucide-react";
+import { clientPost } from "../lib/api";
 
 interface Notification {
   id: string;
@@ -34,16 +35,11 @@ export const NotificationsPanel: React.FC<{ apiBase: string; initial: Notificati
     setBusy(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/notifications/send`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ to: phone, body, kind: "custom" }),
+      const data: Notification = await clientPost(apiBase, "/notifications/send", {
+        to: phone,
+        body,
+        kind: "custom",
       });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || res.statusText);
-      }
-      const data: Notification = await res.json();
       setList((c) => [data, ...c]);
       setBody("");
     } catch (e: any) {

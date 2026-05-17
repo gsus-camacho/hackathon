@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Bell, BellOff, Check, Loader2, ShieldAlert, TrendingDown, Trophy, Sparkles, Tag } from "lucide-react";
+import { clientGet, clientPost } from "../lib/api";
 
 interface Notification {
   id: string;
@@ -49,10 +50,10 @@ export const InboxPanel: React.FC<{ apiBase: string }> = ({ apiBase }) => {
   const load = async (f = filter) => {
     setLoading(true);
     try {
-      const url = `${apiBase}/api/notifications/?limit=100${f === "all" ? "" : `&read=${f === "read"}`}`;
+      const readParam = f === "all" ? "" : `?read=${f === "read"}`;
       const [data, uc] = await Promise.all([
-        fetch(url).then((r) => r.json()),
-        fetch(`${apiBase}/api/notifications/unread-count`).then((r) => r.json()),
+        clientGet(apiBase, `/notifications/${readParam}${readParam ? "&limit=100" : "?limit=100"}`),
+        clientGet(apiBase, "/notifications/unread-count"),
       ]);
       setItems(data || []);
       setUnread(uc?.count || 0);
@@ -65,12 +66,12 @@ export const InboxPanel: React.FC<{ apiBase: string }> = ({ apiBase }) => {
 
   const mark = async (id: string, read: boolean) => {
     const action = read ? "read" : "unread";
-    await fetch(`${apiBase}/api/notifications/${id}/${action}`, { method: "POST" });
+    await clientPost(apiBase, `/notifications/${id}/${action}`);
     load();
   };
 
   const markAll = async () => {
-    await fetch(`${apiBase}/api/notifications/read-all`, { method: "POST" });
+    await clientPost(apiBase, "/notifications/read-all");
     load();
   };
 

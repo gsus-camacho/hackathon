@@ -11,7 +11,7 @@ from modules.planifications import service as plan_svc
 logger = logging.getLogger(__name__)
 
 # AI prompts for recommendation generation
-PRODUCT_RECOMMENDATION_PROMPT = """Eres un nutricionista escolar experto en recomendaciones personalizadas para estudiantes.
+PRODUCT_RECOMMENDATION_PROMPT = """Eres un asistente de recomendaciones personalizadas para estudiantes.
 Analiza los patrones de consumo del estudiante y recomienda 3-5 productos similares o complementarios.
 
 Datos del estudiante:

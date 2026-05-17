@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ShieldAlert, Plus } from "lucide-react";
+import { clientPost } from "../lib/api";
 
 interface Allergen {
   id: string;
@@ -28,15 +29,10 @@ export const AllergenManager: React.FC<{ apiBase: string; initial: Allergen[] }>
     if (!form.usuario_identificacion || !form.allergens) return;
     setBusy(true);
     try {
-      const res = await fetch(`${apiBase}/api/recommendations/allergens`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          allergens: form.allergens.split(",").map((x) => x.trim()).filter(Boolean),
-        }),
+      const data = await clientPost(apiBase, "/recommendations/allergens", {
+        ...form,
+        allergens: form.allergens.split(",").map((x) => x.trim()).filter(Boolean),
       });
-      const data = await res.json();
       setList((c) => [data, ...c]);
       setForm({
         usuario_identificacion: "",

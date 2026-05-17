@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Plus, ShieldAlert, Trash2, Phone, GraduationCap, Hash } from "lucide-react";
+import { clientDelete, clientPost } from "../lib/api";
 
 interface Hijo {
   id: string;
@@ -27,21 +28,12 @@ export const HijosPanel: React.FC<{ apiBase: string; initial: Hijo[] }> = ({ api
     setBusy(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/hijos/`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          usuario_identificacion: form.usuario_identificacion.trim(),
-          allergens: form.allergens.split(",").map((s) => s.trim()).filter(Boolean),
-          notes: form.notes,
-          parent_phone: form.parent_phone || undefined,
-        }),
+      const doc: Hijo = await clientPost(apiBase, "/hijos/", {
+        usuario_identificacion: form.usuario_identificacion.trim(),
+        allergens: form.allergens.split(",").map((s) => s.trim()).filter(Boolean),
+        notes: form.notes,
+        parent_phone: form.parent_phone || undefined,
       });
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg);
-      }
-      const doc: Hijo = await res.json();
       setList((c) => [doc, ...c]);
       setForm({ usuario_identificacion: "", allergens: "", notes: "", parent_phone: "" });
     } catch (e: any) {
@@ -53,7 +45,7 @@ export const HijosPanel: React.FC<{ apiBase: string; initial: Hijo[] }> = ({ api
 
   const remove = async (id: string) => {
     if (!confirm("¿Eliminar este perfil?")) return;
-    await fetch(`${apiBase}/api/hijos/${id}`, { method: "DELETE" });
+    await clientDelete(apiBase, `/hijos/${id}`);
     setList((c) => c.filter((h) => h.id !== id));
   };
 

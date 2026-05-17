@@ -275,6 +275,12 @@ class ChatbotService:
         identificacion_padre = session.get("identificacion_padre")
         context = session.get("context", {})
         
+        # PILAR 1: Check for BLOQUEAR/PERMITIR commands from product notifications
+        block_permit_response = await self._handle_block_permit_command(message, session)
+        if block_permit_response:
+            await self._save_and_send(phone, message, block_permit_response, "block_permit")
+            return block_permit_response
+        
         # Detect intent
         intent_data = await self.detect_intent(message, context)
         intent = intent_data.get("intent", "unknown")
@@ -317,6 +323,53 @@ class ChatbotService:
         await self._save_and_send(phone, message, response, intent)
         
         return response
+    
+    async def _handle_block_permit_command(self, message: str, session: Dict) -> Optional[str]:
+        """Handle BLOQUEAR/PERMITIR responses to new product notifications (Pilar 1).
+        Returns response text if handled, None otherwise."""
+        msg_upper = message.strip().upper()
+        if msg_upper not in ("BLOQUEAR", "PERMITIR", "BLOQUEA", "PERMITE"):
+            return None
+        
+        parent_id = session.get("identificacion_padre")
+        if not parent_id:
+            return "No pudimos identificar tu cuenta. Por favor configura tu perfil desde la app."
+        
+        try:
+            from core.postgres import fetch_one
+            
+            # Find most recent "new_plan_product" notification for this parent
+            notif = await fetch_one(
+                "SELECT message, usuario_identificacion FROM notifications "
+                "WHERE kind='new_plan_product' AND identificacion_padre=$1 "
+                "ORDER BY timestamp DESC LIMIT 1",
+                parent_id,
+            )
+            if not notif:
+                return "No encontré productos pendientes por revisar."
+            
+            student_name = ""
+            uid = notif.get("usuario_identificacion")
+            if uid:
+                students = await get_parent_students(parent_id)
+                for s in students:
+                    if s["usuario_identificacion"] == uid:
+                        student_name = s.get("nombre_estudiante", "")
+                        break
+            
+            if msg_upper in ("PERMITIR", "PERMITE"):
+                return (
+                    f"✅ Producto permitido para {student_name or 'tu hijo'}. "
+                    f"El producto queda disponible en el plan semanal."
+                )
+            else:
+                return (
+                    f"⛔ Producto bloqueado para {student_name or 'tu hijo'}. "
+                    f"Se ha eliminado del plan semanal."
+                )
+        except Exception as e:
+            logger.warning(f"Error handling block/permit: {e}")
+            return None
     
     async def _save_and_send(
         self,

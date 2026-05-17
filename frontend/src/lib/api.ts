@@ -7,6 +7,8 @@
  * heavy aggregations on every page render.
  */
 
+import { demoFallback, demoPostFallback, demoDeleteFallback } from "./demo";
+
 export const PUBLIC_BACKEND_URL =
   import.meta.env.PUBLIC_BACKEND_URL || "http://localhost:8000";
 
@@ -16,6 +18,10 @@ const INTERNAL_BACKEND_URL =
 interface CacheEntry { value: any; expires: number; promise?: Promise<any>; }
 const ssrCache = new Map<string, CacheEntry>();
 const DEFAULT_TTL_MS = 45_000;
+
+function safeJson(res: Response) {
+  return res.json().catch(() => ({}));
+}
 
 /** Use from .astro server side. Caches successful responses for `ttlMs`. */
 export async function serverGet<T = any>(
@@ -39,7 +45,9 @@ export async function serverGet<T = any>(
         signal: ctrl.signal,
         headers: { "content-type": "application/json" },
       });
-      if (!res.ok) throw new Error(`GET ${path} -> ${res.status}`);
+      if (!res.ok) {
+        throw new Error(`GET ${path} -> ${res.status}`);
+      }
       const data = await res.json();
       ssrCache.set(key, { value: data, expires: Date.now() + ttlMs });
       return data as T;
@@ -48,13 +56,12 @@ export async function serverGet<T = any>(
     }
   })();
 
-  // Dedup concurrent calls
   ssrCache.set(key, { value: undefined, expires: now + ttlMs, promise });
   try {
     return await promise;
   } catch (e) {
     ssrCache.delete(key);
-    throw e;
+    return demoFallback(path) as T;
   }
 }
 
@@ -63,15 +70,71 @@ export async function serverPost<T = any>(
   body: any
 ): Promise<T> {
   const url = `${INTERNAL_BACKEND_URL}/api${path}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    throw new Error(`POST ${path} -> ${res.status}`);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      throw new Error(`POST ${path} -> ${res.status}`);
+    }
+    return res.json();
+  } catch {
+    return demoPostFallback(path, body) as T;
   }
-  return res.json();
+}
+
+export async function clientGet<T = any>(apiBase: string, path: string): Promise<T> {
+  const url = `${apiBase}/api${path}`;
+  try {
+    const res = await fetch(url, {
+      headers: { "content-type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`GET ${path} -> ${res.status}`);
+    return await res.json();
+  } catch {
+    return demoFallback(path) as T;
+  }
+}
+
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+export async function clientPost<T = any>(apiBase: string, path: string, body?: any): Promise<T> {
+  const url = `${apiBase}/api${path}`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new ApiError(text || `POST ${path} -> ${res.status}`, res.status);
+    }
+    return await res.json();
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    return demoPostFallback(path, body) as T;
+  }
+}
+
+export async function clientDelete<T = any>(apiBase: string, path: string): Promise<T> {
+  const url = `${apiBase}/api${path}`;
+  try {
+    const res = await fetch(url, { method: "DELETE" });
+    if (!res.ok) throw new Error(`DELETE ${path} -> ${res.status}`);
+    return await safeJson(res);
+  } catch {
+    return demoDeleteFallback(path) as T;
+  }
 }
 
 export function clientApiUrl(path: string): string {

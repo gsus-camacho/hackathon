@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Send, Bot, User } from "lucide-react";
+import { clientPost } from "../lib/api";
 
 interface Msg {
   role: "user" | "bot";
@@ -20,12 +21,10 @@ export const BotSimulator: React.FC<{ apiBase: string }> = ({ apiBase }) => {
     setMsgs((m) => [...m, userMsg]);
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/notifications/whatsapp/simulate`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ From: phone, Body: input }),
+      const data = await clientPost(apiBase, "/notifications/whatsapp/simulate", {
+        From: phone,
+        Body: input,
       });
-      const data = await res.json();
       setMsgs((m) => [...m, { role: "bot", text: data.reply || "(sin respuesta)" }]);
     } catch (e: any) {
       setMsgs((m) => [...m, { role: "bot", text: `Error: ${e.message}` }]);

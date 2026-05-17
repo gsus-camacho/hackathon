@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from typing import Optional
 from modules.planifications import service as svc
 from modules.planifications.schemas import MealPlanCreate, MealItemAdd
-from modules.planifications.errors import PlanificationsError
+from modules.planifications.errors import PlanificationsError, AllergenConflictError
 
 router = APIRouter(prefix="/planifications", tags=["planifications"])
 
@@ -65,6 +65,8 @@ async def active_plan(hijo_id: str):
 async def add_item(plan_id: str, item: MealItemAdd):
     try:
         return await svc.add_item(plan_id, item)
+    except AllergenConflictError as e:
+        raise HTTPException(409, str(e))  # 409 Conflict — blocked by allergen policy
     except PlanificationsError as e:
         raise HTTPException(404, str(e))
 

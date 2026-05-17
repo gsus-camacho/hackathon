@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
+import { clientPost } from "../lib/api";
 
 interface Rec {
   id: string;
@@ -30,13 +31,7 @@ export const RecommendationsPanel: React.FC<{ apiBase: string; initial: Rec[] }>
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/recommendations/generate`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ focus }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data: Rec[] = await res.json();
+      const data: Rec[] = await clientPost(apiBase, "/recommendations/generate", { focus });
       setRecs((curr) => [...data, ...curr]);
     } catch (e: any) {
       setErr(e?.message || "Error generando recomendaciones");

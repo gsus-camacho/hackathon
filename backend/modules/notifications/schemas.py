@@ -13,6 +13,8 @@ NotificationKind = Literal[
     "package_offer",
     "weekly_nutrition",
     "meal_plan_reward",
+    "new_plan_product",
+    "bot_response",
     "custom",
 ]
 

@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>BioAlert+ — Pitch Operativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="deck-stage.js"></script>
+<script type="application/json" id="speaker-notes">
+[
+  "Biofood ha operado durante una década, acumulando un activo que ningún competidor reciente posee: 7.2 millones de registros transaccionales. Hoy presentaremos cómo convertir esa base de datos estática en un ecosistema de retención y monetización activa. El producto se llama BioAlert+, y se construye sobre la arquitectura Angular existente — extender, no reemplazar.",
+  "Actualmente nos enfrentamos a un riesgo de erosión de mercado. Los colegios y los padres están siendo atraídos por plataformas que ofrecen mayor interacción. Katú opera con ciento cuarenta mil usuarios activos en ocho países, ofreciendo canales bidireccionales que nosotros no tenemos. El indicador interno más crítico: el sesenta por ciento de nuestros registros de recargas no tienen un padre vinculado. Es un punto ciego en nuestra capacidad de comunicación y retención que define la ventana de oportunidad.",
+  "La respuesta técnica es BioAlert+. No se trata de reconstruir el producto, sino de aplicar un principio de integración estricto: extender, no reemplazar. Utilizando los componentes actuales, añadimos tres interfaces que se conectan al flujo del sistema Angular existente. La App Móvil para padres, el Bot de WhatsApp como canal asíncrono, y un nuevo Dashboard Analítico para la cafetería. Los tres se conectan al core transaccional sin reescribirlo.",
+  "El primer objetivo es asegurar capital anticipado y optimizar el inventario. Introducimos paquetes semanales y mensuales. Para mitigar la fricción de configuración, el sistema ofrece una recompensa configurada por la cafetería — económica o un producto promocional. Esta selección anticipada permite proyectar la demanda con precisión y evitar quiebres de stock. Adicionalmente, el flujo de WhatsApp se convierte en un canal bidireccional: al notificar un consumo solicitamos un micro-rating que alimenta directamente la calificación del producto. Si la cafetería añade un producto nuevo, el padre recibe una alerta para bloquearlo o permitirlo con un clic. En caso de omisión, el sistema delega la decisión al Pilar 2.",
+  "Agrupamos alérgenos y regímenes bajo un único perfil de Preferencias Alimentarias. El valor técnico está en la automatización. Una vez configurado, el sistema bloquea de raíz cualquier producto incompatible en el catálogo del estudiante. Si el padre ignora la notificación de WhatsApp sobre un nuevo producto, la arquitectura resuelve el problema sin fricción: utilizamos la API de Gemini para analizar la composición inferida del nuevo ítem y cruzarla con el perfil del estudiante. Si existe riesgo o incompatibilidad, se bloquea por defecto. Seguridad alimentaria con cero carga operativa para el usuario.",
+  "Este es el núcleo de la conversión B2B. El activo más importante de Biofood son los diez años de datos transaccionales. Los operacionalizamos ofreciendo a la cafetería un Benchmark Nacional, comparando el rendimiento de su catálogo contra colegios de perfil similar. Pero los datos de volumen requieren contexto cualitativo. Por eso cruzamos las métricas de ventas con un Satisfaction Index, una métrica compuesta por frecuencia de compra, tasa de repetición y feedback directo de los padres recopilado vía WhatsApp en el Pilar 1. Esta triangulación entrega a la cafetería recomendaciones precisas sobre qué inventario comprar y qué productos descontinuar.",
+  "Dado el enfoque técnico de la implementación, la capa de diseño se abordó bajo un principio de eficiencia. Las interfaces propuestas heredan estrictamente la identidad visual y los patrones de navegación actuales de la plataforma. La adición de colores semánticos para estados de alerta y confirmación se integra sobre la arquitectura existente. La curva de aprendizaje para el administrador de la cafetería y el padre es mínima — no aprenden un nuevo producto, aprenden tres nuevas pantallas dentro del mismo.",
+  "Las proyecciones se fundamentan en dinámicas comprobadas de comercio electrónico y modelos prepago. Primero: incremento del ticket promedio de al menos veinte por ciento. Al transicionar de recargas reactivas de bajo monto a paquetes impulsados por incentivos, el usuario consolida el gasto mensual en una sola transacción, elevando el valor del ticket inicial y asegurando liquidez. Segundo: reducción de saldos en cero de al menos treinta por ciento. Históricamente el saldo en cero es producto del olvido. Al automatizar alertas preventivas vía WhatsApp antes de que se agote el saldo y permitir la recarga desde el mismo canal, eliminamos la latencia entre la intención y la acción. Eso cierra el pitch."
+]
+</script>
+<style>
+  :root {
+    /* Type scale */
+    --type-display: 84px;
+    --type-title: 60px;
+    --type-subtitle: 38px;
+    --type-body: 30px;
+    --type-small: 24px;
+    --type-micro: 20px;
+    --type-eyebrow: 24px;
+    --type-mono-data: 56px;
+
+    /* Spacing */
+    --pad-top: 100px;
+    --pad-bottom: 88px;
+    --pad-x: 110px;
+    --gap-title: 48px;
+    --gap-item: 24px;
+    --gap-section: 64px;
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+
+    /* Color — Biofood brand */
+    --bg: #FFFFFF;
+    --bg-tint: #F4F8FE;
+    --surface: #FFFFFF;
+    --surface-2: #EEF3FB;
+    --surface-tint: #DCE8F8;
+    --ink: #0E2240;
+    --ink-2: #3C4F6B;
+    --ink-3: #7A8AA3;
+    --line: #DDE6F2;
+    --line-strong: #BCC9DC;
+
+    --primary: #1B7CE8;
+    --primary-deep: #1565C0;
+    --primary-2: #4A9AF0;
+    --primary-soft: #BCD6F5;
+    --primary-container: #DCEAFB;
+    --on-primary-container: #0B3B73;
+
+    --error: #D14343;
+    --error-container: #FBE0E0;
+    --success: #2E8C5A;
+    --success-container: #DCEFE3;
+    --warn: #D08A2A;
+    --warn-container: #FAEAD0;
+
+    --elev-1: 0 1px 2px rgba(16,20,28,0.06), 0 1px 1px rgba(16,20,28,0.04);
+    --elev-2: 0 2px 4px rgba(16,20,28,0.08), 0 3px 6px rgba(16,20,28,0.06);
+    --elev-3: 0 4px 10px rgba(16,20,28,0.08), 0 10px 24px rgba(16,20,28,0.06);
+  }
+
+  html, body { margin: 0; padding: 0; background: #0a1326; }
+  body { font-family: "Poppins", system-ui, sans-serif; color: var(--ink); }
+
+  deck-stage section {
+    background: var(--bg);
+    color: var(--ink);
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+    box-sizing: border-box;
+    font-size: var(--type-body);
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Slide chrome */
+  .chrome {
+    position: absolute;
+    top: 44px; left: var(--pad-x); right: var(--pad-x);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 24px;
+    color: var(--ink-3);
+    letter-spacing: 0.02em;
+  }
+  .chrome .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    font-size: 26px;
+    color: var(--primary);
+  }
+  .chrome .wordmark .fp {
+    width: 36px; height: 36px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .chrome .wordmark .lockup { display: inline-flex; align-items: baseline; gap: 8px; }
+  .chrome .wordmark .dot-end {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: inline-block;
+    margin-left: -4px;
+    margin-bottom: 2px;
+  }
+  .chrome .wordmark .sep {
+    color: var(--ink-3);
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 400;
+    font-size: 24px;
+    letter-spacing: 0.04em;
+  }
+  .chrome .wordmark .product {
+    color: var(--ink-2);
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 500;
+    font-size: 24px;
+    letter-spacing: 0.04em;
+  }
+  .chrome .meta { display: flex; gap: 32px; }
+  .chrome .meta span::before { content: ""; display: inline-block; width: 6px; height: 6px; background: var(--ink-3); border-radius: 50%; margin-right: 10px; vertical-align: middle; }
+
+  /* Headings */
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--type-eyebrow);
+    color: var(--primary);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin: 0 0 22px;
+  }
+  h1.title {
+    font-size: var(--type-title);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--gap-title);
+    max-width: 1500px;
+  }
+  h1.display {
+    font-size: var(--type-display);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+  .subtitle {
+    font-size: var(--type-subtitle);
+    font-weight: 400;
+    line-height: 1.25;
+    color: var(--ink-2);
+    margin: 0;
+    letter-spacing: -0.01em;
+    max-width: 1400px;
+  }
+  .body { font-size: var(--type-body); line-height: 1.45; color: var(--ink-2); margin: 0; }
+  .small { font-size: var(--type-small); color: var(--ink-3); margin: 0; }
+  .mono { font-family: "IBM Plex Mono", monospace; }
+  .ink { color: var(--ink); }
+  .ink2 { color: var(--ink-2); }
+  .ink3 { color: var(--ink-3); }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 28px 32px;
+    box-shadow: var(--elev-1);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .card.compact { padding: 20px 26px; gap: 8px; }
+  .card .label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 24px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .card.elev-2 { box-shadow: var(--elev-2); border-color: transparent; }
+  .card.elev-3 { box-shadow: var(--elev-3); border-color: transparent; }
+  .card .kpi {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--type-mono-data);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .card.error { background: var(--error-container); border-color: transparent; }
+  .card.error .kpi { color: var(--error); }
+  .card.success .kpi { color: var(--success); }
+  .card.warn .kpi { color: var(--warn); }
+  .card.primary { background: var(--primary); color: #fff; border-color: transparent; }
+  .card.primary .label { color: rgba(255,255,255,0.7); }
+  .card.primary .kpi { color: #fff; }
+
+  /* Layout helpers */
+  .row { display: flex; gap: 32px; }
+  .col { display: flex; flex-direction: column; gap: 32px; }
+  .grow { flex: 1; }
+
+  /* Chips */
+  .chip {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 24px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+  .chip.primary { background: var(--primary-container); color: var(--on-primary-container); }
+  .chip.success { background: var(--success-container); color: var(--success); }
+  .chip.warn { background: var(--warn-container); color: var(--warn); }
+  .chip.error { background: var(--error-container); color: var(--error); }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+  /* Fingerprint motif — reused decorative background */
+  .fingerprint-bg {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.06;
+    color: var(--primary);
+  }
+  .fingerprint-bg svg { width: 100%; height: 100%; display: block; }
+
+  /* Curved wave bottom (biofood-style section divider) */
+  .wave-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 90px;
+    background: var(--bg);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    transform: scaleX(1.4);
+    transform-origin: bottom center;
+  }
+
+  /* Hero variant slide */
+  .hero-bg {
+    background: var(--primary);
+    color: #fff;
+  }
+  .hero-bg .eyebrow { color: rgba(255,255,255,0.8); }
+  .hero-bg .subtitle { color: rgba(255,255,255,0.86); }
+  .hero-bg .chrome { color: rgba(255,255,255,0.7); }
+  .hero-bg .chrome .wordmark { color: #fff; }
+  .hero-bg .chrome .wordmark .dot-end { background: #fff; }
+  .hero-bg .chrome .wordmark .product { color: rgba(255,255,255,0.7); }
+  .hero-bg .chrome .wordmark .sep { color: rgba(255,255,255,0.5); }
+  .hero-bg .chrome .meta { color: rgba(255,255,255,0.7); }
+  .hero-bg .chrome .meta span::before { background: rgba(255,255,255,0.5); }
+  .hero-bg .slidefoot { color: rgba(255,255,255,0.6); }
+  .hero-bg .fingerprint-bg { color: #fff; opacity: 0.09; }
+  /* Footer slide number */
+  .slidefoot {
+    position: absolute;
+    bottom: 44px;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 24px;
+    color: var(--ink-3);
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 0.04em;
+  }
+
+  /* Logo mark — original glyph, just a typographic monogram */
+  .mark {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .mark .glyph {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--primary);
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  /* Diagram tokens */
+  .node {
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 28px 32px;
+    display: flex; flex-direction: column; gap: 10px;
+    box-shadow: var(--elev-1);
+  }
+  .node .ntitle {
+    font-size: 32px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .node .ntag {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 24px;
+    color: var(--ink-3); letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .node.primary-node {
+    background: var(--primary);
+    color: #fff;
+    border-color: transparent;
+  }
+  .node.primary-node .ntitle { color: #fff; }
+  .node.primary-node .ntag { color: rgba(255,255,255,0.7); }
+
+  /* Tables */
+  table.metrics {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--type-body);
+  }
+  table.metrics th, table.metrics td {
+    text-align: left;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  table.metrics th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--type-micro);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    font-weight: 500;
+    border-bottom: 1.5px solid var(--line-strong);
+  }
+  table.metrics td.kpi {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 500;
+  }
+
+  /* Phone mock */
+  .phone {
+    width: 380px;
+    background: #fff;
+    border-radius: 40px;
+    border: 1px solid var(--line);
+    box-shadow: var(--elev-3);
+    padding: 18px;
+    box-sizing: border-box;
+  }
+  .phone .screen {
+    background: #ECE6DD;
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .wa-header {
+    background: #075E54;
+    color: #fff;
+    padding: 18px 20px 14px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 20px;
+  }
+  .wa-header .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #34B7F1; color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 16px;
+  }
+  .wa-msgs { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .wa-msg {
+    background: #fff;
+    border-radius: 12px 12px 12px 4px;
+    padding: 14px 16px;
+    font-size: 18px;
+    line-height: 1.35;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    color: var(--ink);
+  }
+  .wa-msg .who {
+    font-size: 13px;
+    color: var(--ink-3);
+    font-family: "IBM Plex Mono", monospace;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+  .wa-msg .actions {
+    display: flex; gap: 8px; margin-top: 12px;
+  }
+  .wa-msg .btn {
+    font-family: "IBM Plex Sans";
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+  }
+  .wa-msg .btn.primary { background: var(--primary-container); color: var(--on-primary-container); border-color: transparent;}
+  .wa-msg .btn.danger { background: var(--error-container); color: var(--error); border-color: transparent;}
+  .wa-msg .btn.success { background: var(--success-container); color: var(--success); border-color: transparent;}
+  .wa-msg .tag {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--warn-container);
+    color: var(--warn);
+    letter-spacing: 0.04em;
+    margin-top: 8px;
+  }
+  .wa-msg .rate { display: flex; gap: 10px; margin-top: 10px; }
+  .wa-msg .rate button {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-size: 18px;
+  }
+
+  /* App mock */
+  .app {
+    width: 380px;
+    background: #fff;
+    border-radius: 40px;
+    border: 1px solid var(--line);
+    box-shadow: var(--elev-3);
+    padding: 18px;
+    box-sizing: border-box;
+  }
+  .app .screen {
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .app-header {
+    padding: 24px 22px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .app-header .student {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .app-header .avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 18px;
+  }
+  .app-header .sname { font-weight: 600; font-size: 18px; }
+  .app-header .ssub { font-size: 13px; color: var(--ink-3); font-family: "IBM Plex Mono", monospace;}
+  .app-section {
+    padding: 18px 22px;
+  }
+  .app-section .stitle {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+  }
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 16px;
+  }
+  .toggle-row:last-child { border-bottom: 0; }
+  .toggle {
+    width: 44px; height: 24px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .toggle::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    transition: left 0.2s;
+  }
+  .toggle.on { background: var(--primary); }
+  .toggle.on::after { left: 23px; }
+
+  .gemini-strip {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--surface-tint);
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+    color: var(--ink-2);
+    border: 1px dashed var(--line-strong);
+  }
+  .gemini-strip .gd {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #4285F4 0%, #EA4335 100%);
+    display: inline-block;
+  }
+
+  /* Dashboard mock */
+  .dashboard {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    box-shadow: var(--elev-2);
+    padding: 28px;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .dash-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .dash-head .h { font-weight: 600; font-size: 22px; }
+  .dash-head .tag { font-family: "IBM Plex Mono", monospace; font-size: 14px; color: var(--ink-3); }
+
+  /* Bar chart bars */
+  .bench { display: flex; flex-direction: column; gap: 14px; padding: 4px 0; }
+  .bench .brow { display: flex; align-items: center; gap: 14px; font-size: 24px; }
+  .bench .blabel { width: 200px; color: var(--ink-2); }
+  .bench .btrack { flex: 1; height: 18px; background: var(--surface-2); border-radius: 4px; overflow: hidden; display: flex; }
+  .bench .bfill { height: 100%; background: var(--primary); }
+  .bench .bfill.alt { background: var(--ink-3); }
+  .bench .bnum { font-family: "IBM Plex Mono", monospace; width: 110px; text-align: right; color: var(--ink); font-size: 24px;}
+
+  /* Title slide composition */
+  .title-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 64px;
+    align-items: end;
+  }
+
+  /* Section dividers */
+  .rule {
+    height: 1px; background: var(--line-strong);
+    margin: 0;
+  }
+
+  /* Architecture diagram */
+  .arch {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 100px 1fr 100px 1fr;
+    align-items: center;
+    gap: 0;
+    margin-top: 16px;
+  }
+  .arch .conn {
+    height: 2px;
+    background: repeating-linear-gradient(90deg, var(--line-strong) 0 8px, transparent 8px 14px);
+    position: relative;
+  }
+  .arch .conn::after {
+    content: "";
+    position: absolute;
+    right: -2px; top: -5px;
+    border-left: 10px solid var(--line-strong);
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+  }
+
+  /* Slide 7 cohesion grid */
+  .cohesion {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    align-items: stretch;
+  }
+  .cohesion .cohcard {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 28px;
+    box-shadow: var(--elev-1);
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .cohesion .cohcard .ctitle {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .cohesion .swatch-row { display: flex; gap: 8px; }
+  .cohesion .sw {
+    width: 100%;
+    height: 56px;
+    border-radius: 8px;
+    display: flex; align-items: end; padding: 6px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.85);
+  }
+
+  /* Subtle background numerals */
+  .slide-num-bg {
+    position: absolute;
+    right: var(--pad-x);
+    bottom: var(--pad-bottom);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 320px;
+    line-height: 0.8;
+    color: rgba(26,63,122,0.06);
+    pointer-events: none;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+  }
+
+  /* Validation override */
+  [data-om-validate-skip] { }
+
+  /* Slide 1 numbers */
+  .big-num {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 120px;
+    font-weight: 500;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--primary);
+  }
+  .big-num .unit {
+    font-size: 32px;
+    color: var(--ink-3);
+    letter-spacing: 0;
+    margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+
+<deck-stage width="1920" height="1080">
+
+  <!-- ==================== SLIDE 1: Title ==================== -->
+  <section data-label="01 Tesis Operativa" class="hero-bg">
+    <div class="fingerprint-bg" style="top: -80px; left: -120px; width: 720px; height: 720px;"><svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="100" cy="100" r="20"/><circle cx="100" cy="100" r="35"/><circle cx="100" cy="100" r="50"/><circle cx="100" cy="100" r="65"/><circle cx="100" cy="100" r="80"/><circle cx="100" cy="100" r="95"/></svg></div>
+    <div class="fingerprint-bg" style="bottom: -140px; right: -140px; width: 600px; height: 600px; opacity: 0.07;"><svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="100" cy="100" r="20"/><circle cx="100" cy="100" r="35"/><circle cx="100" cy="100" r="50"/><circle cx="100" cy="100" r="65"/><circle cx="100" cy="100" r="80"/><circle cx="100" cy="100" r="95"/></svg></div>
+    <div class="chrome">
+      <div class="wordmark">
+        <svg class="fp" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4.5 C9 4.5 4.5 9.5 4.5 16 C4.5 19 5.4 22 7 24.5"/><path d="M10.5 27.5 C8.5 24 7.5 20.5 7.5 16.5 C7.5 11.5 11 8 16 8 C20.5 8 23.5 11 23.5 15.5 C23.5 20 21 22.5 17.5 22.5"/><path d="M18.5 27.5 C16 23.5 14.5 20 14.5 16.5 C14.5 14.5 15.5 13.5 17 13.5 C18.3 13.5 19 14.6 19 16"/><path d="M13.5 28 C12.2 25 11.2 21.5 11.2 17.5"/><path d="M22 27.5 C24 25 25.5 22 26 19"/></svg>
+        <span class="lockup"><span>biofood</span><span class="dot-end"></span></span>
+        <span class="sep">/</span>
+        <span class="product">BioAlert+</span>
+      </div>
+      <div class="meta">
+        <span>Pitch operativo</span>
+        <span>Caribe Tech Arena — 2026</span>
+      </div>
+    </div>
+
+    <div class="title-grid">
+      <div>
+        <p class="eyebrow">Tesis central</p>
+        <h1 class="display">Operacionalizando<br/>10 años de datos<br/>transaccionales.</h1>
+        <p class="subtitle" style="margin-top: 36px; max-width: 900px;">
+          BioAlert+ es la capa de retención y monetización que se conecta sobre la plataforma Biofood existente — sin reescribir el core.
+        </p>
+      </div>
+      <div class="col" style="gap: 24px;">
+        <div class="card elev-2">
+          <span class="label">Activo histórico</span>
+          <div style="margin-top: 8px;">
+            <span class="big-num">7.2<span class="unit">M registros</span></span>
+          </div>
+          <p class="small" style="margin-top: 10px;">Transacciones acumuladas en una década de operación.</p>
+        </div>
+        <div class="card">
+          <span class="label">Principio de diseño</span>
+          <p class="body ink" style="font-weight: 500;">Extender, no reemplazar.</p>
+          <p class="small">Tres nuevas interfaces sobre la arquitectura Angular actual.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="slidefoot">
+      <span>Para Pedro Noguera · CEO, Biofood</span>
+      <span>01 / 08</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 2: Riesgo Estructural ==================== -->
+  <section data-label="02 Riesgo Estructural">
+    <div class="chrome">
+      <div class="wordmark">
+        <svg class="fp" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4.5 C9 4.5 4.5 9.5 4.5 16 C4.5 19 5.4 22 7 24.5"/><path d="M10.5 27.5 C8.5 24 7.5 20.5 7.5 16.5 C7.5 11.5 11 8 16 8 C20.5 8 23.5 11 23.5 15.5 C23.5 20 21 22.5 17.5 22.5"/><path d="M18.5 27.5 C16 23.5 14.5 20 14.5 16.5 C14.5 14.5 15.5 13.5 17 13.5 C18.3 13.5 19 14.6 19 16"/><path d="M13.5 28 C12.2 25 11.2 21.5 11.2 17.5"/><path d="M22 27.5 C24 25 25.5 22 26 19"/></svg>
+        <span class="lockup"><span>biofood</span><span class="dot-end"></span></span>
+        <span class="sep">/</span>
+        <span class="product">BioAlert+</span>
+      </div>
+      <div class="meta">
+        <span>Diagnóstico</span>
+        <span>02 — El problema</span>
+      </div>
+    </div>
+
+    <p class="eyebrow">Diagnóstico de mercado</p>
+    <h1 class="title">Riesgo estructural de erosión.</h1>
+    <p class="subtitle" style="margin-bottom: 56px;">El sesenta por ciento de las recargas operan sin un padre vinculado — un punto ciego de comunicación y retención.</p>
+
+    <div class="row" style="flex: 1; gap: 28px; align-items: stretch;">
+      <div class="card error" style="flex: 1.4; justify-content: space-between;">
+        <div>
+          <span class="label">Indicador interno</span>
+          <div class="kpi" style="margin-top: 16px;">60%</div>
+          <p class="small" style="color: var(--error); margin-top: 12px; max-width: 460px;">
+            de los registros de recargas actuales no tienen un padre vinculado al estudiante.
+          </p>
+        </div>
+        <div class="chip error" style="align-self: flex-start;"><span class="dot"></span>Comunicación rota</div>
+      </div>
+
+      <div class="card" style="flex: 1.6;">
+        <span class="label">Posicionamiento comparado</span>
+        <p class="small" style="margin-top: 4px;">Competidor de referencia: Katú</p>
+
+        <div class="bench" style="margin-top: 18px;">
+          <div class="brow">
+            <span class="blabel mono ink2">Usuarios</span>
+            <div class="btrack"><div class="bfill" style="width: 100%;"></div></div>
+            <span class="bnum">140.000</span>
+          </div>
+          <div class="brow">
+            <span class="blabel mono ink2">Países</span>
+            <div class="btrack"><div class="bfill" style="width: 80%;"></div></div>
+            <span class="bnum">8</span>
+          </div>
+          <div class="brow">
+            <span class="blabel mono ink2">Canal padre</span>
+            <div class="btrack"><div class="bfill" style="width: 92%;"></div></div>
+            <span class="bnum">Sí</span>
+          </div>
+          <div class="rule" style="margin: 12px 0;"></div>
+          <div class="brow">
+            <span class="blabel mono ink2">Biofood hoy</span>
+            <div class="btrack"><div class="bfill alt" style="width: 18%;"></div></div>
+            <span class="bnum">—</span>
+          </div>
+          <div class="brow">
+            <span class="blabel mono ink2">Canal padre</span>
+            <div class="btrack"><div class="bfill alt" style="width: 28%;"></div></div>
+            <span class="bnum">Parcial</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="flex: 1; justify-content: space-between;">
+        <div>
+          <span class="label">Consecuencia operativa</span>
+          <p class="body ink" style="margin-top: 18px; font-weight: 500; line-height: 1.25;">
+            Sin canal directo, no hay retención.
+          </p>
+          <p class="small" style="margin-top: 14px;">Las plataformas con interacción bidireccional capturan al usuario que nosotros solo registramos.</p>
+        </div>
+        <div class="chip warn"><span class="dot"></span>Ventana de oportunidad</div>
+      </div>
+    </div>
+
+    <div class="slidefoot">
+      <span>Fuente: registros internos Biofood · sitios públicos Katú</span>
+      <span>02 / 08</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 3: Arquitectura ==================== -->
+  <section data-label="03 Arquitectura">
+    <div class="chrome">
+      <div class="wordmark">
+        <svg class="fp" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4.5 C9 4.5 4.5 9.5 4.5 16 C4.5 19 5.4 22 7 24.5"/><path d="M10.5 27.5 C8.5 24 7.5 20.5 7.5 16.5 C7.5 11.5 11 8 16 8 C20.5 8 23.5 11 23.5 15.5 C23.5 20 21 22.5 17.5 22.5"/><path d="M18.5 27.5 C16 23.5 14.5 20 14.5 16.5 C14.5 14.5 15.5 13.5 17 13.5 C18.3 13.5 19 14.6 19 16"/><path d="M13.5 28 C12.2 25 11.2 21.5 11.2 17.5"/><path d="M22 27.5 C24 25 25.5 22 26 19"/></svg>
+        <span class="lockup"><span>biofood</span><span class="dot-end"></span></span>
+        <span class="sep">/</span>
+        <span class="product">BioAlert+</span>
+      </div>
+      <div class="meta">
+        <span>Arquitectura</span>
+        <span>03 — La solución</span>
+      </div>
+    </div>
+
+    <p class="eyebrow">Arquitectura del sistema</p>
+    <h1 class="title">Tres interfaces sobre el core existente.</h1>
+    <p class="subtitle" style="margin-bottom: 32px;">Principio rector: extender el sistema Angular, no reemplazarlo.</p>
+
+    <div class="arch">
+      <div class="node">
+        <span class="ntag">Interfaz · Padres</span>
+        <span class="ntitle">App Móvil</span>
+        <p class="small ink2">Perfil del estudiante, preferencias alimentarias, recargas.</p>
+      </div>
+      <div class="conn"></div>
+      <div class="node primary-node">
+        <span class="ntag">Core transaccional</span>
+        <span class="ntitle">Biofood / Angular</span>
+        <p class="small" style="color: rgba(255,255,255,0.78);">7.2M registros · catálogo · biometría · POS cafetería.</p>
+      </div>
+      <div class="conn"></div>
+      <div class="node">
+        <span class="ntag">Interfaz · Cafeterías</span>
+        <span class="ntitle">Dashboard Analítico</span>
+        <p class="small ink2">Benchmark nacional + Satisfaction Index sobre 10 años de datos.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 100px 1fr 100px 1fr; align-items: center;">
+      <div></div>
+      <div></div>
+      <div class="conn" style="transform: rotate(90deg); width: 80px; margin: 0 auto;"></div>
+      <div></div>
+      <div></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 100px 1fr 100px 1fr; gap: 0; margin-top: 8px;">
+      <div></div>
+      <div></div>
+      <div class="node" style="border-color: var(--primary-2); border-style: dashed;">
+        <span class="ntag" style="color: var(--primary);">Canal asíncrono</span>
+        <span class="ntitle">Bot WhatsApp</span>
+        <p class="small ink2">Alertas, micro-ratings, recargas conversacionales.</p>
+      </div>
+      <div></div>
+      <div></div>
+    </div>
+
+    <div class="slidefoot">
+      <span>Stack: Angular existente · API Gemini · WhatsApp Business API</span>
+      <span>03 / 08</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 4: Pilar 1 ==================== -->
+  <section data-label="04 Pilar 1 Flujo de Caja" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="chrome">
+      <div class="wordmark">
+        <svg class="fp" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4.5 C9 4.5 4.5 9.5 4.5 16 C4.5 19 5.4 22 7 24.5"/><path d="M10.5 27.5 C8.5 24 7.5 20.5 7.5 16.5 C7.5 11.5 11 8 16 8 C20.5 8 23.5 11 23.5 15.5 C23.5 20 21 22.5 17.5 22.5"/><path d="M18.5 27.5 C16 23.5 14.5 20 14.5 16.5 C14.5 14.5 15.5 13.5 17 13.5 C18.3 13.5 19 14.6 19 16"/><path d="M13.5 28 C12.2 25 11.2 21.5 11.2 17.5"/><path d="M22 27.5 C24 25 25.5 22 26 19"/></svg>
+        <span class="lockup"><span>biofood</span><span class="dot-end"></span></span>
+        <span class="sep">/</span>
+        <span class="product">BioAlert+</span>
+      </div>
+      <div class="meta">
+        <span>Pilar 01</span>
+        <span>04 — Flujo de caja</span>
+      </div>
+    </div>
+
+    <div class="row" style="flex: 1; gap: 64px; align-items: stretch;">
+      <div style="flex: 1.2; display: flex; flex-direction: column;">
+        <p class="eyebrow">Pilar 01</p>
+        <h1 class="title" style="margin-bottom: 24px;">Flujo de caja anticipado.</h1>
+        <p class="subtitle" style="margin-bottom: 28px; font-size: 32px;">El canal de WhatsApp se convierte en bidireccional: paquetes con incentivo, feedback granular, control parental por evento.</p>
+
+        <div class="col" style="gap: 14px; margin-top: 4px;">
+          <div class="card compact">
+            <span class="label">Mecánica 01 · Capital anticipado</span>
+            <p class="body ink" style="font-weight: 500; font-size: 26px;">Paquetes semanales y mensuales con incentivo configurable por la cafetería.</p>
+          </div>
+          <div class="card compact">
+            <span class="label">Mecánica 02 · Calidad</span>
+            <p class="body ink" style="font-weight: 500; font-size: 26px;">Micro-rating post-consumo alimenta el Satisfaction Index del Pilar 3.</p>
+          </div>
+          <div class="card compact">
+            <span class="label">Mecánica 03 · Control parental</span>
+            <p class="body ink" style="font-weight: 500; font-size: 26px;">Bloquear o permitir nuevos productos con un clic. Omisión delega al Pilar 2.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+        <div class="phone">
+          <div class="screen">
+            <div class="wa-header">
+              <div class="avatar">BF</div>
+              <div>
+                <div style="font-weight: 600;">Biofood · Cafetería</div>
+                <div style="font-size: 12px; opacity: 0.8;">en línea</div>
+              </div>
+            </div>
+            <div class="wa-msgs">
+              <div class="wa-msg">
+                <div class="who">PAQUETE MENSUAL</div>
+                Hola María, ¿quieres asegurar las loncheras de Tomás todo octubre?
+                <span class="tag">Incentivo · +1 snack gratis</span>
+                <div class="actions">
+                  <span class="btn primary">Activar paquete</span>
+                  <span class="btn">Más tarde</span>
+                </div>
+              </div>
+              <div class="wa-msg">
+                <div class="who">CONSUMO 12:14 PM</div>
+                Tomás compró <b>Sandwich integral</b>. ¿Cómo le pareció?
+                <div class="rate">
+                  <button>👍</button>
+                  <button>👎</button>
+                </div>
+              </div>
+              <div class="wa-msg">
+                <div class="who">NUEVO PRODUCTO</div>
+                La cafetería añadió <b>Brownie de chocolate</b> al catálogo.
+                <div class="actions">
+                  <span class="btn success">Permitir</span>
+                  <span class="btn danger">Bloquear</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slidefoot">
+      <span>Canal: WhatsApp Business API · sin app instalada</span>
+      <span>04 / 08</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 5: Pilar 2 ==================== -->
+  <section data-label="05 Pilar 2 Seguridad" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="chrome">
+      <div class="wordmark">
+        <svg class="fp" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4.5 C9 4.5 4.5 9.5 4.5 16 C4.5 19 5.4 22 7 24.5"/><path d="M10.5 27.5 C8.5 24 7.5 20.5 7.5 16.5 C7.5 11.5 11 8 16 8 C20.5 8 23.5 11 23.5 15.5 C23.5 20 21 22.5 17.5 22.5"/><path d="M18.5 27.5 C16 23.5 14.5 20 14.5 16.5 C14.5 14.5 15.5 13.5 17 13.5 C18.3 13.5 19 14.6 19 16"/><path d="M13.5 28 C12.2 25 11.2 21.5 11.2 17.5"/><path d="M22 27.5 C24 25 25.5 22 26 19"/></svg>
+        <span class="lockup"><span>biofood</span><span class="dot-end"></span></span>
+        <span class="sep">/</span>
+        <span class="product">BioAlert+</span>
+      </div>
+      <div class="meta">
+        <span>Pilar 02</span>
+        <span>05 — Seguridad nutricional</span>
+      </div>
+    </div>
+
+    <div class="row" style="flex: 1; gap: 64px; align-items: stretch;">
+      <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+        <div class="app">
+          <div class="screen">
+            <div class="app-header">
+              <div class="student">
+                <div class="avatar">TR</div>
+                <div>
+                  <div class="sname">Tomás Rodríguez</div>
+                  <div class="ssub">5° A · ID 0042</div>
+                </div>
+              </div>
+            </div>
+            <div class="app-section">
+              <div class="stitle">Preferencias alimentarias</div>
+              <div class="toggle-row"><span>Sin gluten</span><div class="toggle on"></div></div>
+              <div class="toggle-row"><span>Vegano</span><div class="toggle"></div></div>
+              <div class="toggle-row"><span>Sin lactosa</span><div class="toggle on"></div></div>
+              <div class="toggle-row"><span>Sin frutos secos</span><div class="toggle on"></div></div>
+              <div class="toggle-row"><span>Sin aguacate</span><div class="toggle"></div></div>
+              <div class="toggle-row"><span>Sin huevo</span><div class="toggle"></div></div>
+
+              <div class="gemini-strip">
+                <span class="gd"></span>
+                <span><b>Gemini API</b> · analiza nuevos productos en segundo plano y bloquea por defecto si hay riesgo.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex: 1.2; display: flex; flex-direction: column;">
+        <p class="eyebrow">Pilar 02</p>
+        <h1 class="title" style="margin-bottom: 22px;">Seguridad nutricional automatizada.</h1>
+        <p class="subtitle" style="margin-bottom: 28px; font-size: 32px;">Un único perfil de Preferencias Alimentarias bloquea de raíz cualquier producto incompatible en el catálogo del estudiante.</p>
+
+        <div class="col" style="gap: 14px;">
+          <div class="card compact">
+            <span class="label">Capa 01 · Configuración explícita</span>
+            <p class="body ink" style="font-weight: 500; font-size: 26px;">El padre activa toggles por alérgeno o régimen. Una sola vez.</p>
+          </div>
+          <div class="card compact">
+            <span class="label">Capa 02 · Inferencia automática</span>
+            <p class="body ink" style="font-weight: 500; font-size: 26px;">Gemini analiza la composición inferida de productos nuevos y cruza contra el perfil.</p>
+          </div>
+          <div class="card compact success" style="background: var(--success-container); border: 0;">
+            <span class="label" style="color: var(--success);">Resultado</span>
+            <p class="body" style="font-weight: 500; color: var(--success); font-size: 26px;">Bloqueo por defecto ante riesgo. Cero carga operativa para el usuario.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slidefoot">
+      <span>Latencia objetivo Gemini: &lt; 800ms · fallback: bloqueo conservador</span>
+      <span>05 / 08</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 6: Pilar 3 ==================== -->
+  <section data-label="06 Pilar 3 Inteligencia B2B" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="chrome">
+      <div class="wordmark">
+        <svg class="fp" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4.5 C9 4.5 4.5 9.5 4.5 16 C4.5 19 5.4 22 7 24.5"/><path d="M10.5 27.5 C8.5 24 7.5 20.5 7.5 16.5 C7.5 11.5 11 8 16 8 C20.5 8 23.5 11 23.5 15.5 C23.5 20 21 22.5 17.5 22.5"/><path d="M18.5 27.5 C16 23.5 14.5 20 14.5 16.5 C14.5 14.5 15.5 13.5 17 13.5 C18.3 13.5 19 14.6 19 16"/><path d="M13.5 28 C12.2 25 11.2 21.5 11.2 17.5"/><path d="M22 27.5 C24 25 25.5 22 26 19"/></svg>
+        <span class="lockup"><span>biofood</span><span class="dot-end"></span></span>
+        <span class="sep">/</span>
+        <span class="product">BioAlert+</span>
+      </div>
+      <div class="meta">
+        <span>Pilar 03 · Core</span>
+        <span>06 — Inteligencia B2B</span>
+      </div>
+    </div>
+
+    <p class="eyebrow">Pilar 03 — núcleo de monetización</p>
+    <h1 class="title" style="margin-bottom: 28px;">Inteligencia B2B sobre datos propietarios.</h1>
+    <p class="subtitle" style="margin-bottom: 32px; max-width: 1500px; font-size: 32px;">Triangulación de volumen histórico × Satisfaction Index. La cafetería recibe recomendaciones de inventario fundamentadas, no intuiciones.</p>
+
+    <div class="row" style="flex: 1; gap: 28px; align-items: stretch;">
+      <div class="dashboard" style="flex: 1.2; padding: 22px 24px; gap: 12px;">
+        <div class="dash-head">
+          <div class="h">Benchmark Nacional</div>
+          <div class="tag">vs. 24 colegios perfil similar</div>
+        </div>
+        <div class="bench">
+          <div class="brow">
+            <span class="blabel">Sandwich integral</span>
+            <div class="btrack"><div class="bfill" style="width: 84%;"></div></div>
+            <span class="bnum">+18%</span>
+          </div>
+          <div class="brow">
+            <span class="blabel">Jugo natural</span>
+            <div class="btrack"><div class="bfill" style="width: 72%;"></div></div>
+            <span class="bnum">+11%</span>
+          </div>
+          <div class="brow">
+            <span class="blabel">Wrap pollo</span>
+            <div class="btrack"><div class="bfill" style="width: 52%;"></div></div>
+            <span class="bnum">+2%</span>
+          </div>
+          <div class="brow">
+            <span class="blabel">Galleta avena</span>
+            <div class="btrack"><div class="bfill alt" style="width: 32%;"></div></div>
+            <span class="bnum">−14%</span>
+          </div>
+        </div>
+        <p class="small mono" style="font-size: 22px;">Eje · ventas mes vs. mediana nacional del segmento.</p>
+      </div>
+
+      <div class="dashboard" style="flex: 1; padding: 22px 24px; gap: 12px;">
+        <div class="dash-head">
+          <div class="h">Satisfaction Index</div>
+          <div class="tag">frecuencia · repetición · rating</div>
+        </div>
+        <table class="metrics">
+          <thead><tr><th>Producto</th><th>SI</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr><td>Sandwich integral</td><td class="kpi">0.92</td><td><span class="chip success" style="font-size: 22px; padding: 4px 12px;">Mantener</span></td></tr>
+            <tr><td>Jugo natural</td><td class="kpi">0.88</td><td><span class="chip success" style="font-size: 22px; padding: 4px 12px;">Mantener</span></td></tr>
+            <tr><td>Wrap pollo</td><td class="kpi">0.61</td><td><span class="chip warn" style="font-size: 22px; padding: 4px 12px;">Revisar</span></td></tr>
+            <tr><td>Galleta avena</td><td class="kpi">0.34</td><td><span class="chip error" style="font-size: 22px; padding: 4px 12px;">Descontinuar</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card primary elev-3" style="flex: 0.7; justify-content: space-between; padding: 26px 28px;">
+        <div>
+          <span class="label">Triangulación</span>
+          <p style="font-size: 30px; font-weight: 600; line-height: 1.15; margin-top: 16px; margin-bottom: 0; letter-spacing: -0.01em;">
+            Volumen histórico × satisfacción cualitativa.
+          </p>
+        </div>
+        <div>
+          <p class="small" style="color: rgba(255,255,255,0.75); margin-bottom: 12px; font-size: 18px;">Output entregado:</p>
+          <div class="chip" style="background: rgba(255,255,255,0.12); color: #fff; margin-bottom: 6px;"><span class="dot"></span>Qué comprar</div>
+          <div class="chip" style="background: rgba(255,255,255,0.12); color: #fff; margin-bottom: 6px;"><span class="dot"></span>Qué descontinuar</div>
+          <div class="chip" style="background: rgba(255,255,255,0.12); color: #fff;"><span class="dot"></span>Cuándo reabastecer</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slidefoot">
+      <span>SI = frecuencia + repetición + rating WhatsApp · pesos calibrados por cohorte</span>
+      <span>06 / 08</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 7: UI/UX cohesion ==================== -->
+  <section data-label="07 Cohesión de Interfaz" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="chrome">
+      <div class="wordmark">
+        <svg class="fp" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4.5 C9 4.5 4.5 9.5 4.5 16 C4.5 19 5.4 22 7 24.5"/><path d="M10.5 27.5 C8.5 24 7.5 20.5 7.5 16.5 C7.5 11.5 11 8 16 8 C20.5 8 23.5 11 23.5 15.5 C23.5 20 21 22.5 17.5 22.5"/><path d="M18.5 27.5 C16 23.5 14.5 20 14.5 16.5 C14.5 14.5 15.5 13.5 17 13.5 C18.3 13.5 19 14.6 19 16"/><path d="M13.5 28 C12.2 25 11.2 21.5 11.2 17.5"/><path d="M22 27.5 C24 25 25.5 22 26 19"/></svg>
+        <span class="lockup"><span>biofood</span><span class="dot-end"></span></span>
+        <span class="sep">/</span>
+        <span class="product">BioAlert+</span>
+      </div>
+      <div class="meta">
+        <span>Sistema visual</span>
+        <span>07 — Cohesión</span>
+      </div>
+    </div>
+
+    <p class="eyebrow">Diseño de interacción</p>
+    <h1 class="title" style="margin-bottom: 24px;">Cohesión sobre la identidad existente.</h1>
+    <p class="subtitle" style="margin-bottom: 28px; font-size: 32px;">Las tres interfaces heredan tipografía, paleta y patrones de navegación de la plataforma actual. La adición se limita a color semántico para estados.</p>
+
+    <div class="cohesion">
+      <div class="cohcard" style="padding: 22px; gap: 12px;">
+        <div class="ctitle">App Móvil — Padres</div>
+        <div style="background: var(--surface-2); border-radius: 12px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; background-image: repeating-linear-gradient(45deg, transparent 0 12px, rgba(0,0,0,0.04) 12px 24px); color: var(--ink-3); font-family: 'IBM Plex Mono'; font-size: 14px;">
+          [ mock · perfil estudiante ]
+        </div>
+        <p class="small ink2" style="font-size: 20px;">Hereda navegación inferior, jerarquía de tarjetas y radios del admin web. Suma toggles M3 para Preferencias.</p>
+      </div>
+      <div class="cohcard" style="padding: 22px; gap: 12px;">
+        <div class="ctitle">WhatsApp — Bot</div>
+        <div style="background: var(--surface-2); border-radius: 12px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; background-image: repeating-linear-gradient(45deg, transparent 0 12px, rgba(0,0,0,0.04) 12px 24px); color: var(--ink-3); font-family: 'IBM Plex Mono'; font-size: 14px;">
+          [ mock · conversación ]
+        </div>
+        <p class="small ink2" style="font-size: 20px;">No requiere UI propia. Plantillas con acciones rápidas — paquete, rating, bloquear, permitir.</p>
+      </div>
+      <div class="cohcard" style="padding: 22px; gap: 12px;">
+        <div class="ctitle">Dashboard — Cafetería</div>
+        <div style="background: var(--surface-2); border-radius: 12px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; background-image: repeating-linear-gradient(45deg, transparent 0 12px, rgba(0,0,0,0.04) 12px 24px); color: var(--ink-3); font-family: 'IBM Plex Mono'; font-size: 14px;">
+          [ mock · benchmark + SI ]
+        </div>
+        <p class="small ink2" style="font-size: 20px;">Nueva sección sobre el menú lateral existente. Mismas tarjetas con elevación nivel 2.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+      <div class="sw" style="background: var(--primary); border-radius: 8px; padding: 8px 12px; height: 42px; box-sizing: border-box; display: flex; align-items: end; color: rgba(255,255,255,0.85); font-family: 'IBM Plex Mono'; font-size: 12px;">primary · #1B7CE8</div>
+      <div class="sw" style="background: var(--success); border-radius: 8px; padding: 8px 12px; height: 42px; box-sizing: border-box; display: flex; align-items: end; color: rgba(255,255,255,0.85); font-family: 'IBM Plex Mono'; font-size: 12px;">success · permitir</div>
+      <div class="sw" style="background: var(--error); border-radius: 8px; padding: 8px 12px; height: 42px; box-sizing: border-box; display: flex; align-items: end; color: rgba(255,255,255,0.85); font-family: 'IBM Plex Mono'; font-size: 12px;">error · bloquear</div>
+      <div class="sw" style="background: var(--warn); border-radius: 8px; padding: 8px 12px; height: 42px; box-sizing: border-box; display: flex; align-items: end; color: rgba(255,255,255,0.85); font-family: 'IBM Plex Mono'; font-size: 12px;">warn · revisar</div>
+    </div>
+
+    <div class="slidefoot">
+      <span>Curva de aprendizaje objetivo: tres pantallas nuevas, no un producto nuevo</span>
+      <span>07 / 08</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 8: KPIs ==================== -->
+  <section data-label="08 Proyección de KPIs">
+    <div class="chrome">
+      <div class="wordmark">
+        <svg class="fp" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4.5 C9 4.5 4.5 9.5 4.5 16 C4.5 19 5.4 22 7 24.5"/><path d="M10.5 27.5 C8.5 24 7.5 20.5 7.5 16.5 C7.5 11.5 11 8 16 8 C20.5 8 23.5 11 23.5 15.5 C23.5 20 21 22.5 17.5 22.5"/><path d="M18.5 27.5 C16 23.5 14.5 20 14.5 16.5 C14.5 14.5 15.5 13.5 17 13.5 C18.3 13.5 19 14.6 19 16"/><path d="M13.5 28 C12.2 25 11.2 21.5 11.2 17.5"/><path d="M22 27.5 C24 25 25.5 22 26 19"/></svg>
+        <span class="lockup"><span>biofood</span><span class="dot-end"></span></span>
+        <span class="sep">/</span>
+        <span class="product">BioAlert+</span>
+      </div>
+      <div class="meta">
+        <span>Proyección</span>
+        <span>08 — KPIs</span>
+      </div>
+    </div>
+
+    <p class="eyebrow">Proyección de impacto</p>
+    <h1 class="title">Dos KPIs, dos mecánicas probadas.</h1>
+    <p class="subtitle" style="margin-bottom: 56px;">Fundamentadas en dinámicas establecidas de comercio electrónico y modelos prepago — no en estimaciones promocionales.</p>
+
+    <div class="row" style="gap: 28px; flex: 1; align-items: stretch;">
+      <div class="card elev-2" style="flex: 1; justify-content: space-between;">
+        <div>
+          <div class="chip primary" style="margin-bottom: 28px; display: inline-flex;"><span class="dot"></span>Pilar 01 · Flujo de caja</div>
+          <span class="label">Ticket promedio</span>
+          <div class="kpi" style="font-size: 96px; margin-top: 10px; color: var(--primary);">+20%</div>
+          <p class="small" style="margin-top: 14px;">objetivo mínimo</p>
+        </div>
+        <div>
+          <div class="rule" style="margin: 24px 0 20px;"></div>
+          <p class="small mono" style="text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Metodología</p>
+          <p class="small ink2" style="line-height: 1.45;">Consolidación de recargas reactivas de bajo monto en paquetes mensuales con incentivo. El gasto se compromete antes del consumo, elevando el ticket inicial y asegurando liquidez para la cafetería.</p>
+        </div>
+      </div>
+
+      <div class="card elev-2" style="flex: 1; justify-content: space-between;">
+        <div>
+          <div class="chip primary" style="margin-bottom: 28px; display: inline-flex;"><span class="dot"></span>Pilar 01 · Retención</div>
+          <span class="label">Saldos en cero</span>
+          <div class="kpi" style="font-size: 96px; margin-top: 10px; color: var(--success);">−30%</div>
+          <p class="small" style="margin-top: 14px;">objetivo mínimo</p>
+        </div>
+        <div>
+          <div class="rule" style="margin: 24px 0 20px;"></div>
+          <p class="small mono" style="text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Metodología</p>
+          <p class="small ink2" style="line-height: 1.45;">El saldo en cero es producto del olvido. Alertas preventivas vía WhatsApp más recarga conversacional eliminan la latencia entre intención y acción.</p>
+        </div>
+      </div>
+
+      <div class="card primary elev-3" style="flex: 1; justify-content: space-between;">
+        <div>
+          <div class="chip" style="background: rgba(255,255,255,0.14); color: #fff; margin-bottom: 28px; display: inline-flex;"><span class="dot"></span>Pilar 03 · B2B</div>
+          <span class="label">Conversión cafetería</span>
+          <p style="font-size: 44px; font-weight: 600; line-height: 1.1; margin: 18px 0 0; letter-spacing: -0.01em;">Inventario informado por SI + Benchmark.</p>
+        </div>
+        <div>
+          <div class="rule" style="margin: 24px 0 20px; background: rgba(255,255,255,0.2);"></div>
+          <p class="small mono" style="text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; color: rgba(255,255,255,0.7);">Activo subyacente</p>
+          <p class="small" style="color: rgba(255,255,255,0.85); line-height: 1.4;">10 años de datos transaccionales propietarios. Barrera de entrada que ningún competidor reciente puede replicar.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="slidefoot">
+      <span>Próximo paso · validación con cohorte piloto de 3 colegios en Q3</span>
+      <span>08 / 08</span>
+    </div>
+  </section>
+
+</deck-stage>
+
+</body>
+</html>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Loader2, AlertTriangle } from "lucide-react";
 import AtRiskTable from "./AtRiskTable";
+import { clientGet } from "../lib/api";
 
 interface Student {
   usuario_identificacion: string;
@@ -20,8 +21,7 @@ export const AtRiskLoader: React.FC<{ apiBase: string }> = ({ apiBase }) => {
 
   useEffect(() => {
     let alive = true;
-    fetch(`${apiBase}/api/planifications/at-risk?limit=50`)
-      .then((r) => r.json())
+    clientGet(apiBase, "/planifications/at-risk?limit=50")
       .then((d) => alive && setStudents(d))
       .catch((e) => alive && setErr(e?.message || "Error cargando datos"));
     return () => {

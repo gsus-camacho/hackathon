@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Star, Send } from "lucide-react";
+import { clientGet, clientPost } from "../lib/api";
 
 interface Rating {
   id: string;
@@ -23,15 +24,14 @@ export const FeedbackPanel: React.FC<{ apiBase: string; initial: Rating[]; summa
     e.preventDefault();
     setBusy(true);
     try {
-      const res = await fetch(`${apiBase}/api/feedback/ratings`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ score, comment, product_name: product || undefined, source: "dashboard" }),
+      const data: Rating = await clientPost(apiBase, "/feedback/ratings", {
+        score,
+        comment,
+        product_name: product || undefined,
+        source: "dashboard",
       });
-      const data: Rating = await res.json();
       setList((c) => [data, ...c]);
-      const sumRes = await fetch(`${apiBase}/api/feedback/summary`);
-      setStats(await sumRes.json());
+      setStats(await clientGet(apiBase, "/feedback/summary"));
       setComment("");
       setProduct("");
     } finally {
