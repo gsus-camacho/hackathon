@@ -1,28 +1,36 @@
-"""Pydantic schemas for feedback module (ratings)."""
+"""Pydantic schemas for feedback module (thumbs up/down on products)."""
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Literal
 from pydantic import BaseModel, Field, ConfigDict
 import uuid
 
 
-class Rating(BaseModel):
+VoteType = Literal["up", "down"]
+
+
+class ProductVote(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    usuario_identificacion: Optional[str] = None
-    identificacion_padre: Optional[str] = None
+    product_name: str
+    vote: VoteType
+    voter_id: Optional[str] = None  # usuario_identificacion or identificacion_padre
     nit_colegio: Optional[str] = None
-    product_name: Optional[str] = None  # optional: rating for a product
-    score: int  # 1..5
-    comment: Optional[str] = None
-    source: str = "dashboard"  # "whatsapp" | "dashboard"
+    source: str = "dashboard"
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
-class RatingCreate(BaseModel):
-    score: int
-    comment: Optional[str] = None
-    usuario_identificacion: Optional[str] = None
-    identificacion_padre: Optional[str] = None
+class VoteCreate(BaseModel):
+    product_name: str
+    vote: VoteType
+    voter_id: Optional[str] = None
     nit_colegio: Optional[str] = None
-    product_name: Optional[str] = None
     source: str = "dashboard"
+
+
+class ProductFeedback(BaseModel):
+    """Aggregated per-product feedback."""
+    product_name: str
+    up: int
+    down: int
+    total: int
+    score_pct: float  # % positive

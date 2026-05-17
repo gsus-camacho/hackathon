@@ -1,49 +1,87 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import BotSimulator from "../components/BotSimulator.tsx";
-import { PUBLIC_BACKEND_URL } from "../lib/api";
+import { MessageCircle, ShieldAlert, TrendingDown, Tag, Sparkles, ArrowUpRight } from "lucide-react";
+
+const whatsappLink = "https://wa.me/14155238886?text=" + encodeURIComponent("join earn-fact");
 ---
-<Layout title="BioBot" active="bot" description="Conversation handler">
-  <div class="mb-6">
-    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">BioBot · ConversationHandler</h1>
-    <p class="text-bio-500 text-sm mt-1">
-      Simulador del webhook de WhatsApp. Intent → datos Biofood → Gemini → respuesta.
-    </p>
-  </div>
-  <div class="grid lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 rounded-xl border border-bio-200 bg-white p-5">
-      <BotSimulator apiBase={PUBLIC_BACKEND_URL} client:load />
+<Layout title="BioBot" active="bot" description="WhatsApp assistant">
+  <div class="max-w-4xl">
+    <div class="mb-6">
+      <span class="text-[10px] uppercase tracking-[0.22em] font-mono text-bio-500">BioBot — solo WhatsApp</span>
+      <h1 class="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-bio-900 mt-2">
+        Tu asistente inteligente vive en WhatsApp.
+      </h1>
+      <p class="text-bio-500 text-sm mt-3 max-w-2xl">
+        BioBot procesa cada mensaje del padre, detecta la intención (consumo, saldo, paquetes, alergenos)
+        y responde al instante combinando los datos de Biofood con Gemini 3 Flash. No requiere instalación,
+        no requiere app: solo el WhatsApp del acudiente.
+      </p>
     </div>
-    <div class="rounded-xl border border-bio-200 bg-white p-5 h-fit">
-      <h3 class="font-heading font-semibold text-bio-900 mb-3">Intents soportados</h3>
-      <ul class="space-y-3 text-sm">
-        <li class="flex items-start gap-2">
-          <span class="rounded bg-brand-soft text-brand text-[10px] font-mono px-2 py-0.5">consumption</span>
-          <span class="text-bio-700">Qué ha consumido mi hijo</span>
-        </li>
-        <li class="flex items-start gap-2">
-          <span class="rounded bg-emerald-50 text-ok text-[10px] font-mono px-2 py-0.5">balance</span>
-          <span class="text-bio-700">Saldo actual y predicción</span>
-        </li>
-        <li class="flex items-start gap-2">
-          <span class="rounded bg-amber-50 text-warn text-[10px] font-mono px-2 py-0.5">package</span>
-          <span class="text-bio-700">Paquetes y ofertas dinámicas</span>
-        </li>
-        <li class="flex items-start gap-2">
-          <span class="rounded bg-red-50 text-danger text-[10px] font-mono px-2 py-0.5">alerts</span>
-          <span class="text-bio-700">Perfiles de alergenos y alertas activas</span>
-        </li>
-        <li class="flex items-start gap-2">
-          <span class="rounded bg-bio-100 text-bio-700 text-[10px] font-mono px-2 py-0.5">greeting</span>
-          <span class="text-bio-700">Saludo y onboarding al menú</span>
-        </li>
-      </ul>
-      <div class="mt-5 pt-5 border-t border-bio-200">
-        <h4 class="font-heading font-medium text-bio-900 mb-2 text-sm">Webhook URL para Twilio</h4>
-        <code class="block text-[10px] font-mono text-bio-500 bg-bio-50 p-2 rounded overflow-x-auto">
-          POST /api/notifications/whatsapp/webhook
-        </code>
+
+    <div class="relative overflow-hidden rounded-2xl bg-bio-900 text-bio-100 p-8 grain" data-testid="bot-cta-card">
+      <div class="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 grid place-items-center">
+            <MessageCircle class="h-7 w-7" />
+          </div>
+          <div>
+            <div class="font-heading text-xl font-semibold text-white">Activar BioBot ahora</div>
+            <p class="text-sm text-bio-200 mt-1">
+              Escanea el QR o pulsa el botón. Envía <span class="font-mono text-emerald-300">"join earn-fact"</span> al sandbox de Twilio
+              y luego pregunta lo que quieras.
+            </p>
+          </div>
+        </div>
+        <a
+          href={whatsappLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 text-sm font-semibold transition-colors shadow-lg shadow-emerald-500/20"
+          data-testid="bot-cta-whatsapp"
+        >
+          Abrir WhatsApp
+          <ArrowUpRight class="h-4 w-4" />
+        </a>
       </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4 mt-6">
+      <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-consumption">
+        <div class="flex items-center gap-2">
+          <div class="rounded-lg bg-brand-soft text-brand p-2"><Sparkles class="h-4 w-4" /></div>
+          <h3 class="font-heading font-semibold text-bio-900">"¿Qué comió mi hijo hoy?"</h3>
+        </div>
+        <p class="text-sm text-bio-500 mt-2">BioBot consulta hackaton_ventas y responde con los productos del día, hora y monto.</p>
+      </div>
+      <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-balance">
+        <div class="flex items-center gap-2">
+          <div class="rounded-lg bg-emerald-50 text-ok p-2"><TrendingDown class="h-4 w-4" /></div>
+          <h3 class="font-heading font-semibold text-bio-900">"¿Cuánto saldo le queda?"</h3>
+        </div>
+        <p class="text-sm text-bio-500 mt-2">Calcula recargas vs consumo y predice días restantes en menos de 2 segundos.</p>
+      </div>
+      <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-package">
+        <div class="flex items-center gap-2">
+          <div class="rounded-lg bg-amber-50 text-warn p-2"><Tag class="h-4 w-4" /></div>
+          <h3 class="font-heading font-semibold text-bio-900">"Muéstrame paquetes"</h3>
+        </div>
+        <p class="text-sm text-bio-500 mt-2">Listado de paquetes dinámicos vigentes con descuento aplicado.</p>
+      </div>
+      <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-alerts">
+        <div class="flex items-center gap-2">
+          <div class="rounded-lg bg-red-50 text-danger p-2"><ShieldAlert class="h-4 w-4" /></div>
+          <h3 class="font-heading font-semibold text-bio-900">"¿Hay alguna alerta?"</h3>
+        </div>
+        <p class="text-sm text-bio-500 mt-2">Estado de alergenos registrados y alertas activas por hijo.</p>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-xl border border-bio-200 bg-white p-5">
+      <h3 class="font-heading font-semibold text-bio-900 mb-1">¿Integrando en producción?</h3>
+      <p class="text-sm text-bio-500 mb-3">Configura el webhook de Twilio apuntando a este endpoint y BioBot estará listo.</p>
+      <code class="block text-xs font-mono text-bio-900 bg-bio-50 px-3 py-2 rounded-lg break-all" data-testid="webhook-url">
+        POST https://88bfab26-c04e-4ef6-ba04-035dcbdfe13b.preview.emergentagent.com/api/notifications/whatsapp/webhook
+      </code>
     </div>
   </div>
 </Layout>

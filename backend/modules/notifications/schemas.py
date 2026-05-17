@@ -1,4 +1,4 @@
-"""Pydantic schemas for notifications module (WhatsApp alerts)."""
+"""Pydantic schemas for notifications module (WhatsApp alerts + read/unread inbox)."""
 from datetime import datetime, timezone
 from typing import Optional, Literal
 from pydantic import BaseModel, Field, ConfigDict
@@ -12,6 +12,7 @@ NotificationKind = Literal[
     "daily_report",
     "package_offer",
     "weekly_nutrition",
+    "meal_plan_reward",
     "custom",
 ]
 
@@ -29,7 +30,9 @@ class Notification(BaseModel):
     twilio_sid: Optional[str] = None
     status: str = "pending"
     error: Optional[str] = None
+    read: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    read_at: Optional[str] = None
 
 
 class SendMessageRequest(BaseModel):

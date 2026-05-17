@@ -10,7 +10,11 @@ from modules.recommendations import repository as rec_repo
 async def dashboard_kpis(nit_colegio: Optional[str] = None) -> Dict:
     rev = await repo.get_school_revenue(nit_colegio, days=30)
     rec_total = await repo.get_recargas_total(nit_colegio, days=30)
-    avg_rating = await fb_repo.average_rating(nit_colegio)
+    fb_summary = await fb_repo.aggregate_per_product(nit_colegio)
+    total_up = sum(r["up"] for r in fb_summary)
+    total_down = sum(r["down"] for r in fb_summary)
+    total_votes = total_up + total_down
+    avg_score = (total_up / total_votes * 100) if total_votes else 0
     students_at_risk = await plan_repo.count_students_at_risk(nit_colegio)
     bot_today = await notif_repo.count_sessions_today()
     allergens = await rec_repo.count_allergens(nit_colegio)
@@ -18,12 +22,13 @@ async def dashboard_kpis(nit_colegio: Optional[str] = None) -> Dict:
         "active_alerts": allergens + students_at_risk,
         "students_at_risk": students_at_risk,
         "package_revenue": float(rev.get("revenue", 0) or 0),
-        "satisfaction_score": round(avg_rating, 2),
+        "satisfaction_score": round(avg_score, 1),
         "total_students": int(rev.get("students", 0) or 0),
         "total_revenue_30d": float(rev.get("revenue", 0) or 0),
         "total_recargas_30d": rec_total,
         "bot_sessions_today": bot_today,
         "allergen_profiles": allergens,
+        "feedback_votes": total_votes,
     }
 
 
@@ -46,10 +51,14 @@ async def school_score(nit_colegio: str) -> float:
     """Composite health score 0-100."""
     school_avg = await repo.get_school_avg_revenue_per_student(nit_colegio, 30)
     net_avg = await repo.get_network_avg_revenue_per_student(30)
-    rating = await fb_repo.average_rating(nit_colegio)
+    fb_rows = await fb_repo.aggregate_per_product(nit_colegio)
+    total_up = sum(r["up"] for r in fb_rows)
+    total_down = sum(r["down"] for r in fb_rows)
+    total_votes = total_up + total_down
+    rating_pct = (total_up / total_votes * 100) if total_votes else 0
     risk = await plan_repo.count_students_at_risk(nit_colegio)
     rev_score = min(100, (school_avg / net_avg * 50)) if net_avg else 50
-    rating_score = (rating / 5) * 30
+    rating_score = (rating_pct / 100) * 30
     risk_score = max(0, 20 - min(risk, 20))
     return round(rev_score + rating_score + risk_score, 1)
 

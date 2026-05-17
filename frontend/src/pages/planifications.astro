@@ -1,14 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import AtRiskLoader from "../components/AtRiskLoader.tsx";
+import MealPlanner from "../components/MealPlanner.tsx";
 import { PUBLIC_BACKEND_URL } from "../lib/api";
 ---
-<Layout title="Planificaciones" active="planifications" description="Balance prediction">
-  <div class="mb-6 flex items-end justify-between">
-    <div>
-      <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Planificaciones</h1>
-      <p class="text-bio-500 text-sm mt-1">Predicción de saldo y estudiantes en riesgo.</p>
-    </div>
+<Layout title="Planificaciones" active="planifications" description="Weekly meal scheduling">
+  <div class="mb-6">
+    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Planificaciones semanales</h1>
+    <p class="text-bio-500 text-sm mt-1">
+      Asigna productos a cada hijo durante la semana. Al alcanzar el presupuesto mínimo, se desbloquea una recompensa.
+    </p>
   </div>
-  <AtRiskLoader apiBase={PUBLIC_BACKEND_URL} client:load />
+  <MealPlanner apiBase={PUBLIC_BACKEND_URL} client:load />
 </Layout>

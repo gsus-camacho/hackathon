@@ -18,6 +18,7 @@ from modules.discounts.routes import router as discounts_router  # noqa: E402
 from modules.feedback.routes import router as feedback_router  # noqa: E402
 from modules.recommendations.routes import router as recommendations_router  # noqa: E402
 from modules.notifications.routes import router as notifications_router  # noqa: E402
+from modules.hijos.routes import router as hijos_router  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -56,6 +57,7 @@ api_router.include_router(discounts_router)
 api_router.include_router(feedback_router)
 api_router.include_router(recommendations_router)
 api_router.include_router(notifications_router)
+api_router.include_router(hijos_router)
 
 app.include_router(api_router)
 

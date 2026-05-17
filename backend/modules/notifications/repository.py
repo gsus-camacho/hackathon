@@ -1,4 +1,4 @@
-"""Notifications repository: stores Twilio messages + bot sessions in MongoDB."""
+"""Notifications repository: stores WhatsApp messages, bot sessions, read state in MongoDB."""
 from typing import Optional, List, Dict
 from datetime import datetime, timezone
 from core.mongo import get_db
@@ -9,11 +9,37 @@ async def insert_notification(doc: Dict) -> Dict:
     return doc
 
 
-async def list_notifications(limit: int = 50, kind: Optional[str] = None) -> List[Dict]:
-    q = {}
+async def list_notifications(
+    limit: int = 100,
+    kind: Optional[str] = None,
+    read: Optional[bool] = None,
+) -> List[Dict]:
+    q: Dict = {}
     if kind:
         q["kind"] = kind
+    if read is not None:
+        q["read"] = read
     return await get_db().notifications.find(q, {"_id": 0}).sort("created_at", -1).to_list(limit)
+
+
+async def mark_read(notification_id: str, read: bool = True) -> bool:
+    update = {"read": read}
+    if read:
+        update["read_at"] = datetime.now(timezone.utc).isoformat()
+    res = await get_db().notifications.update_one({"id": notification_id}, {"$set": update})
+    return res.modified_count > 0
+
+
+async def mark_all_read() -> int:
+    res = await get_db().notifications.update_many(
+        {"read": False},
+        {"$set": {"read": True, "read_at": datetime.now(timezone.utc).isoformat()}},
+    )
+    return res.modified_count
+
+
+async def count_unread() -> int:
+    return await get_db().notifications.count_documents({"read": False})
 
 
 async def count_today() -> int:

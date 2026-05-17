@@ -1,7 +1,10 @@
-"""Planifications repository: per-student balance calculation from Biofood data."""
+"""Planifications repository: balance + weekly meal plans."""
 from typing import Optional, List, Dict
 from core.postgres import fetch_all, fetch_one
+from core.mongo import get_db
 
+
+# -- Balance queries (PostgreSQL) --
 
 async def get_student_balance(usuario_identificacion: str) -> Optional[Dict]:
     q = """
@@ -29,75 +32,62 @@ async def get_student_balance(usuario_identificacion: str) -> Optional[Dict]:
     return await fetch_one(q, usuario_identificacion)
 
 
-async def list_students_at_risk(nit_colegio: Optional[str] = None, limit: int = 50) -> List[Dict]:
-    """Identify students whose remaining balance is low (< 30 days avg spend)."""
+async def list_students_at_risk_fast(nit_colegio: Optional[str] = None, limit: int = 50) -> List[Dict]:
     if nit_colegio:
         q = """
-            WITH ventas_agg AS (
-              SELECT usuario_identificacion,
-                     MAX(nombre_estudiante) AS nombre_estudiante,
-                     MAX(nit_colegio) AS nit_colegio,
-                     SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)) AS total_consumo,
-                     COUNT(DISTINCT fecha) AS active_days,
-                     MAX(fecha::date) AS last_consumption
-              FROM hackaton_ventas WHERE nit_colegio=$1
-              GROUP BY usuario_identificacion
-            ),
-            recargas_agg AS (
-              SELECT usuario_identificacion, SUM(valor) AS total_recargas, MAX(fecha) AS last_recharge
-              FROM hackaton_recargas WHERE nit_colegio=$1 GROUP BY usuario_identificacion
-            )
-            SELECT v.usuario_identificacion, v.nombre_estudiante, v.nit_colegio,
-                   COALESCE(r.total_recargas, 0) AS total_recargas,
-                   v.total_consumo,
-                   COALESCE(r.total_recargas, 0) - v.total_consumo AS current_balance,
-                   v.active_days,
-                   v.last_consumption,
-                   r.last_recharge
-            FROM ventas_agg v
-            LEFT JOIN recargas_agg r ON r.usuario_identificacion = v.usuario_identificacion
-            WHERE COALESCE(r.total_recargas, 0) - v.total_consumo < (v.total_consumo / NULLIF(v.active_days, 0)) * 7
-              AND v.active_days > 3
-            ORDER BY (COALESCE(r.total_recargas, 0) - v.total_consumo) ASC
-            LIMIT $2
+            SELECT v.usuario_identificacion,
+                   MAX(v.nombre_estudiante) AS nombre_estudiante,
+                   MAX(v.nit_colegio) AS nit_colegio,
+                   MAX(v.fecha::date) AS last_consumption
+            FROM hackaton_ventas v
+            WHERE v.nit_colegio=$1 AND v.fecha::date >= CURRENT_DATE - 14
+              AND NOT EXISTS (
+                SELECT 1 FROM hackaton_recargas r
+                WHERE r.usuario_identificacion = v.usuario_identificacion
+                  AND r.fecha >= CURRENT_DATE - 30
+              )
+            GROUP BY v.usuario_identificacion
+            ORDER BY last_consumption DESC LIMIT $2
         """
         rows = await fetch_all(q, nit_colegio, limit)
     else:
         q = """
-            WITH ventas_agg AS (
-              SELECT usuario_identificacion,
-                     MAX(nombre_estudiante) AS nombre_estudiante,
-                     MAX(nit_colegio) AS nit_colegio,
-                     SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)) AS total_consumo,
-                     COUNT(DISTINCT fecha) AS active_days,
-                     MAX(fecha::date) AS last_consumption
-              FROM hackaton_ventas
-              GROUP BY usuario_identificacion
-            ),
-            recargas_agg AS (
-              SELECT usuario_identificacion, SUM(valor) AS total_recargas, MAX(fecha) AS last_recharge
-              FROM hackaton_recargas GROUP BY usuario_identificacion
-            )
-            SELECT v.usuario_identificacion, v.nombre_estudiante, v.nit_colegio,
-                   COALESCE(r.total_recargas, 0) AS total_recargas,
-                   v.total_consumo,
-                   COALESCE(r.total_recargas, 0) - v.total_consumo AS current_balance,
-                   v.active_days,
-                   v.last_consumption,
-                   r.last_recharge
-            FROM ventas_agg v
-            LEFT JOIN recargas_agg r ON r.usuario_identificacion = v.usuario_identificacion
-            WHERE COALESCE(r.total_recargas, 0) - v.total_consumo < (v.total_consumo / NULLIF(v.active_days, 0)) * 7
-              AND v.active_days > 3
-            ORDER BY (COALESCE(r.total_recargas, 0) - v.total_consumo) ASC
-            LIMIT $1
+            SELECT v.usuario_identificacion,
+                   MAX(v.nombre_estudiante) AS nombre_estudiante,
+                   MAX(v.nit_colegio) AS nit_colegio,
+                   MAX(v.fecha::date) AS last_consumption
+            FROM hackaton_ventas v
+            WHERE v.fecha::date >= CURRENT_DATE - 14
+              AND NOT EXISTS (
+                SELECT 1 FROM hackaton_recargas r
+                WHERE r.usuario_identificacion = v.usuario_identificacion
+                  AND r.fecha >= CURRENT_DATE - 30
+              )
+            GROUP BY v.usuario_identificacion
+            ORDER BY last_consumption DESC LIMIT $1
         """
         rows = await fetch_all(q, limit)
-    return rows
+    enriched = []
+    for r in rows:
+        uid = r["usuario_identificacion"]
+        consumo = await fetch_one(
+            "SELECT COALESCE(SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)), 0) AS total FROM hackaton_ventas WHERE usuario_identificacion=$1",
+            uid,
+        )
+        recargas = await fetch_one(
+            "SELECT COALESCE(SUM(valor), 0) AS total, MAX(fecha) AS last_recharge FROM hackaton_recargas WHERE usuario_identificacion=$1",
+            uid,
+        )
+        enriched.append({
+            **r,
+            "total_consumo": float(consumo["total"]) if consumo else 0.0,
+            "total_recargas": float(recargas["total"]) if recargas else 0.0,
+            "last_recharge": recargas.get("last_recharge") if recargas else None,
+        })
+    return enriched
 
 
 async def count_students_at_risk(nit_colegio: Optional[str] = None) -> int:
-    """Fast approximation: students who consumed in last 14 days but haven't recharged in 30+ days."""
     if nit_colegio:
         q = """
             SELECT COUNT(DISTINCT v.usuario_identificacion) AS c
@@ -126,66 +116,6 @@ async def count_students_at_risk(nit_colegio: Optional[str] = None) -> int:
     return int(row["c"]) if row else 0
 
 
-async def list_students_at_risk_fast(nit_colegio: Optional[str] = None, limit: int = 50) -> List[Dict]:
-    """Lightweight: list of students with consumption in last 14 days but no recharge in last 30 days."""
-    if nit_colegio:
-        q = """
-            SELECT v.usuario_identificacion,
-                   MAX(v.nombre_estudiante) AS nombre_estudiante,
-                   MAX(v.nit_colegio) AS nit_colegio,
-                   MAX(v.fecha::date) AS last_consumption
-            FROM hackaton_ventas v
-            WHERE v.nit_colegio = $1
-              AND v.fecha::date >= CURRENT_DATE - 14
-              AND NOT EXISTS (
-                SELECT 1 FROM hackaton_recargas r
-                WHERE r.usuario_identificacion = v.usuario_identificacion
-                  AND r.fecha >= CURRENT_DATE - 30
-              )
-            GROUP BY v.usuario_identificacion
-            ORDER BY last_consumption DESC
-            LIMIT $2
-        """
-        rows = await fetch_all(q, nit_colegio, limit)
-    else:
-        q = """
-            SELECT v.usuario_identificacion,
-                   MAX(v.nombre_estudiante) AS nombre_estudiante,
-                   MAX(v.nit_colegio) AS nit_colegio,
-                   MAX(v.fecha::date) AS last_consumption
-            FROM hackaton_ventas v
-            WHERE v.fecha::date >= CURRENT_DATE - 14
-              AND NOT EXISTS (
-                SELECT 1 FROM hackaton_recargas r
-                WHERE r.usuario_identificacion = v.usuario_identificacion
-                  AND r.fecha >= CURRENT_DATE - 30
-              )
-            GROUP BY v.usuario_identificacion
-            ORDER BY last_consumption DESC
-            LIMIT $1
-        """
-        rows = await fetch_all(q, limit)
-    # Enrich a small subset with totals
-    enriched = []
-    for r in rows:
-        uid = r["usuario_identificacion"]
-        consumo_row = await fetch_one(
-            "SELECT COALESCE(SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)), 0) AS total FROM hackaton_ventas WHERE usuario_identificacion=$1",
-            uid,
-        )
-        recargas_row = await fetch_one(
-            "SELECT COALESCE(SUM(valor), 0) AS total, MAX(fecha) AS last_recharge FROM hackaton_recargas WHERE usuario_identificacion=$1",
-            uid,
-        )
-        enriched.append({
-            **r,
-            "total_consumo": float(consumo_row["total"]) if consumo_row else 0.0,
-            "total_recargas": float(recargas_row["total"]) if recargas_row else 0.0,
-            "last_recharge": recargas_row.get("last_recharge") if recargas_row else None,
-        })
-    return enriched
-
-
 async def search_students(query: str, limit: int = 20) -> List[Dict]:
     q = """
         SELECT DISTINCT usuario_identificacion, nombre_estudiante, nit_colegio, colegio
@@ -202,3 +132,37 @@ async def get_parent_students(identificacion_padre: str) -> List[Dict]:
         FROM hackaton_ventas WHERE identificacion_padre=$1
     """
     return await fetch_all(q, identificacion_padre)
+
+
+# -- Weekly meal plans (MongoDB) --
+
+async def insert_meal_plan(doc: Dict) -> Dict:
+    await get_db().meal_plans.insert_one({**doc})
+    return doc
+
+
+async def list_meal_plans(hijo_id: Optional[str] = None, limit: int = 50) -> List[Dict]:
+    q: Dict = {}
+    if hijo_id:
+        q["hijo_id"] = hijo_id
+    return await get_db().meal_plans.find(q, {"_id": 0}).sort("week_start", -1).to_list(limit)
+
+
+async def get_meal_plan(plan_id: str) -> Optional[Dict]:
+    return await get_db().meal_plans.find_one({"id": plan_id}, {"_id": 0})
+
+
+async def get_active_plan_for_hijo(hijo_id: str) -> Optional[Dict]:
+    return await get_db().meal_plans.find_one(
+        {"hijo_id": hijo_id}, {"_id": 0}, sort=[("week_start", -1)]
+    )
+
+
+async def update_meal_plan(plan_id: str, updates: Dict) -> Optional[Dict]:
+    await get_db().meal_plans.update_one({"id": plan_id}, {"$set": updates})
+    return await get_meal_plan(plan_id)
+
+
+async def delete_meal_plan(plan_id: str) -> bool:
+    res = await get_db().meal_plans.delete_one({"id": plan_id})
+    return res.deleted_count > 0

@@ -1,13 +1,11 @@
 ---
 import {
   LayoutDashboard,
-  Tag,
+  Baby,
+  CalendarRange,
+  ThumbsUp,
   Bell,
-  Star,
-  TrendingUp,
-  BarChart3,
   Sparkles,
-  ShieldAlert,
   MessageCircle,
 } from "lucide-react";
 
@@ -15,13 +13,11 @@ const { active = "dashboard" } = Astro.props;
 
 const items = [
   { key: "dashboard", label: "Dashboard", href: "/", icon: LayoutDashboard },
-  { key: "discounts", label: "Paquetes", href: "/discounts", icon: Tag },
+  { key: "hijos", label: "Hijos", href: "/hijos", icon: Baby },
+  { key: "planifications", label: "Planificaciones", href: "/planifications", icon: CalendarRange },
+  { key: "feedback", label: "Feedback", href: "/feedback", icon: ThumbsUp },
   { key: "notifications", label: "Notificaciones", href: "/notifications", icon: Bell },
-  { key: "feedback", label: "Feedback", href: "/feedback", icon: Star },
-  { key: "planifications", label: "Planificaciones", href: "/planifications", icon: TrendingUp },
-  { key: "statistics", label: "Estadísticas", href: "/statistics", icon: BarChart3 },
   { key: "recommendations", label: "Recomendaciones IA", href: "/recommendations", icon: Sparkles },
-  { key: "allergens", label: "Alergenos", href: "/allergens", icon: ShieldAlert },
   { key: "bot", label: "BioBot", href: "/bot", icon: MessageCircle },
 ];
 ---

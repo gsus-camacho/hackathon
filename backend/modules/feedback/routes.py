@@ -1,24 +1,34 @@
-"""Feedback API routes."""
+"""Feedback API routes (👍👎 product voting)."""
 from fastapi import APIRouter, HTTPException
 from typing import Optional
 from modules.feedback import service as svc
-from modules.feedback.schemas import RatingCreate
+from modules.feedback.schemas import VoteCreate
 from modules.feedback.errors import InvalidRatingError
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
 
-@router.get("/ratings")
-async def list_ratings(nit_colegio: Optional[str] = None, limit: int = 50):
-    return await svc.list_ratings(nit_colegio, limit)
-
-
-@router.post("/ratings")
-async def create_rating(req: RatingCreate):
+@router.post("/vote")
+async def vote(req: VoteCreate):
     try:
-        return await svc.create_rating(req)
+        return await svc.vote(req)
     except InvalidRatingError as e:
         raise HTTPException(400, str(e))
+
+
+@router.get("/votes")
+async def list_votes(product_name: Optional[str] = None, limit: int = 100):
+    return await svc.list_votes(product_name, limit)
+
+
+@router.get("/products")
+async def per_product(nit_colegio: Optional[str] = None):
+    return await svc.per_product(nit_colegio)
+
+
+@router.get("/products/{product_name}")
+async def product_summary(product_name: str):
+    return await svc.product_summary(product_name)
 
 
 @router.get("/summary")

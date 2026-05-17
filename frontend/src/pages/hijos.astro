@@ -1,0 +1,17 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HijosPanel from "../components/HijosPanel.tsx";
+import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
+
+let hijos: any[] = [];
+try { hijos = await serverGet("/hijos/"); } catch {}
+---
+<Layout title="Hijos" active="hijos" description="Configured children">
+  <div class="mb-6">
+    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Hijos configurados</h1>
+    <p class="text-bio-500 text-sm mt-1">
+      Vincula a cada hijo con sus datos de Biofood, alergenos y notas para activar alertas inteligentes.
+    </p>
+  </div>
+  <HijosPanel apiBase={PUBLIC_BACKEND_URL} initial={hijos} client:load />
+</Layout>

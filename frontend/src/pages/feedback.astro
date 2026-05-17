@@ -1,20 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import FeedbackPanel from "../components/FeedbackPanel.tsx";
+import ProductFeedbackBoard from "../components/ProductFeedbackBoard.tsx";
 import { serverGet, PUBLIC_BACKEND_URL } from "../lib/api";
 
-let ratings: any[] = [], summary: any = { average: 0, count: 0 };
-try {
-  [ratings, summary] = await Promise.all([
-    serverGet("/feedback/ratings?limit=50"),
-    serverGet("/feedback/summary"),
-  ]);
-} catch {}
+let products: any[] = [];
+try { products = await serverGet("/statistics/top-products?limit=18"); } catch {}
 ---
-<Layout title="Feedback" active="feedback" description="Ratings module">
+<Layout title="Feedback" active="feedback" description="Product voting">
   <div class="mb-6">
-    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Feedback</h1>
-    <p class="text-bio-500 text-sm mt-1">Ratings y comentarios de la comunidad.</p>
+    <h1 class="font-heading text-3xl font-semibold tracking-tight text-bio-900">Feedback de productos</h1>
+    <p class="text-bio-500 text-sm mt-1">
+      Califica los productos con 👍 o 👎. Cada voto alimenta el ranking del catálogo del colegio.
+    </p>
   </div>
-  <FeedbackPanel apiBase={PUBLIC_BACKEND_URL} initial={ratings} summary={summary} client:load />
+  <ProductFeedbackBoard apiBase={PUBLIC_BACKEND_URL} products={products} client:load />
 </Layout>
