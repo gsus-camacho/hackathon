@@ -13,6 +13,16 @@ async def list_recommendations(nit_colegio: Optional[str] = None):
     return await svc.list_recommendations(nit_colegio)
 
 
+@router.get("/personalized")
+async def personalized(usuario_identificacion: str, nit_colegio: Optional[str] = None):
+    return await svc.personalized_recommendations(usuario_identificacion, nit_colegio)
+
+
+@router.get("/package-offer")
+async def package_offer(usuario_identificacion: str, nit_colegio: Optional[str] = None):
+    return await svc.package_offer(usuario_identificacion, nit_colegio)
+
+
 @router.post("/generate")
 async def generate(req: RecommendationRequest):
     try:

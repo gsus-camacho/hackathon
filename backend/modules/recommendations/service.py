@@ -16,6 +16,88 @@ Devuelve UN array JSON con 3-4 recomendaciones, cada una con esta estructura exa
 Sé directo, usa español neutro, evita generalidades, basa todo en los datos enviados."""
 
 
+async def personalized_recommendations(usuario_identificacion: str, nit_colegio: Optional[str] = None, days: int = 30) -> List[Dict]:
+    top_products = await stats_repo.get_student_top_products(usuario_identificacion, limit=5, days=days)
+    avg_spend = await stats_repo.get_student_avg_spend(usuario_identificacion, days=days)
+    school_avg = await stats_repo.get_school_avg_revenue_per_student(nit_colegio, days) if nit_colegio else 0.0
+    products = [p["name"] for p in top_products]
+    recs = [
+        {
+            "title": "Paquete semanal personalizado",
+            "summary": (
+                f"Basado en el consumo promedio de ${avg_spend:,.0f}/día, sugerimos un paquete semanal de 5 días "
+                f"con un 5% de descuento para estabilidad de saldo."
+            ),
+            "rationale": (
+                "Tu hijo compra frecuentemente " + ", ".join(products[:3]) + ". "
+                f"Promover un paquete fijo reduce recargas frecuentes y estabiliza el presupuesto."
+            ),
+            "kind": "package",
+            "impact_score": min(95, max(30, int(avg_spend / 500))),
+            "data": {
+                "usuario_identificacion": usuario_identificacion,
+                "avg_daily_spend": avg_spend,
+                "top_products": products,
+            },
+        }
+    ]
+    if school_avg and school_avg > 0:
+        recs.append({
+            "title": "Ajuste de consumo frente al promedio escolar",
+            "summary": (
+                f"Tu hijo gasta en promedio ${avg_spend:,.0f}/día, frente a ${school_avg:,.0f}/día del colegio."
+            ),
+            "rationale": (
+                "Es útil equilibrar la alimentación con opciones similares pero más económicas cuando el gasto personal supera la media escolar."
+            ),
+            "kind": "nutrition",
+            "impact_score": min(90, max(20, int(100 - abs(avg_spend - school_avg) / max(school_avg, 1) * 100))),
+            "data": {
+                "avg_daily_spend": avg_spend,
+                "school_avg_daily": school_avg,
+            },
+        })
+    return recs
+
+
+async def package_offer(usuario_identificacion: str, nit_colegio: Optional[str] = None) -> Dict[str, Dict[str, object]]:
+    avg_spend = await stats_repo.get_student_avg_spend(usuario_identificacion, days=30)
+    if avg_spend <= 0:
+        avg_spend = 12000.0
+    weekly_price = round(avg_spend * 5 * 0.95, 2)
+    monthly_price = round(avg_spend * 20 * 0.9, 2)
+    return {
+        "weekly": {
+            "name": "Paquete Semanal",
+            "days": 5,
+            "estimated_daily": round(avg_spend, 2),
+            "discount_pct": 5,
+            "price": weekly_price,
+            "savings": round(avg_spend * 5 - weekly_price, 2),
+        },
+        "monthly": {
+            "name": "Paquete Mensual",
+            "days": 20,
+            "estimated_daily": round(avg_spend, 2),
+            "discount_pct": 10,
+            "price": monthly_price,
+            "savings": round(avg_spend * 20 - monthly_price, 2),
+        },
+    }
+
+
+async def analyze_student_consumption(usuario_identificacion: str, days: int = 7) -> Dict[str, object]:
+    purchases = await stats_repo.get_student_recent_purchases(usuario_identificacion, days=days, limit=20)
+    total = sum(p["total"] for p in purchases)
+    return {
+        "usuario_identificacion": usuario_identificacion,
+        "days": days,
+        "total_spent": round(total, 2),
+        "purchase_count": len(purchases),
+        "products": [p["product"] for p in purchases[:5]],
+    }
+
+
 async def generate_recommendations(req: RecommendationRequest) -> List[Dict]:
     top = await stats_repo.get_top_products(req.nit_colegio, 8, 30)
     rev = await stats_repo.get_school_revenue(req.nit_colegio, 30)

@@ -1,6 +1,6 @@
 """Feedback repository: stores product thumb votes in MongoDB."""
 from typing import Optional, List, Dict
-from core.mongo import get_db
+from core.sqlite import get_db
 
 
 async def insert_vote(doc: Dict) -> Dict:

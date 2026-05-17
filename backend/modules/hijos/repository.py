@@ -1,6 +1,6 @@
 """Hijos repository: stores configured children profiles in MongoDB."""
 from typing import Optional, List, Dict
-from core.mongo import get_db
+from core.sqlite import get_db
 from core.postgres import fetch_one
 
 

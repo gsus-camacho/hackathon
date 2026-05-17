@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from modules.planifications import repository as repo
 from modules.planifications.schemas import MealPlan, MealPlanCreate, MealItem, MealItemAdd
 from modules.planifications.errors import PlanificationsError
+from modules.hijos import repository as hijos_repo
+from modules.statistics import repository as stats_repo
 
 
 # -- Balance prediction --
@@ -72,6 +74,49 @@ def _compute_totals(items: List[Dict], minimum_budget: float) -> Dict:
 
 async def create_plan(req: MealPlanCreate) -> Dict:
     plan = MealPlan(**req.model_dump())
+    doc = plan.model_dump()
+    doc.update(_compute_totals(doc["items"], doc["minimum_budget"]))
+    await repo.insert_meal_plan(doc)
+    return doc
+
+
+async def generate_plan(req: MealPlanCreate) -> Dict:
+    if req.items:
+        return await create_plan(req)
+
+    hijo = await hijos_repo.get_hijo(req.hijo_id)
+    if not hijo:
+        raise PlanificationsError("Hijo no encontrado")
+
+    usuario_identificacion = hijo.get("usuario_identificacion")
+    nombre_estudiante = hijo.get("nombre_estudiante") or ""
+    top_products = await stats_repo.get_student_top_product_prices(usuario_identificacion, limit=5, days=30)
+    items = []
+    for index, product in enumerate(top_products[:5]):
+        items.append(
+            MealItem(
+                day=index,
+                product_name=product["name"],
+                quantity=1,
+                unit_price=round(product["avg_price"], 2),
+            )
+        )
+
+    if not items:
+        fallback_price = round(req.minimum_budget / 5, 2)
+        items = [
+            MealItem(day=i, product_name=f"Producto {i + 1}", quantity=1, unit_price=fallback_price)
+            for i in range(5)
+        ]
+
+    plan = MealPlan(
+        hijo_id=req.hijo_id,
+        usuario_identificacion=usuario_identificacion,
+        nombre_estudiante=nombre_estudiante,
+        week_start=req.week_start,
+        minimum_budget=req.minimum_budget,
+        items=items,
+    )
     doc = plan.model_dump()
     doc.update(_compute_totals(doc["items"], doc["minimum_budget"]))
     await repo.insert_meal_plan(doc)

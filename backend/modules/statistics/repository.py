@@ -184,3 +184,80 @@ async def get_recent_activity(nit_colegio: Optional[str] = None, limit: int = 12
         })
     merged.sort(key=lambda x: x["timestamp"], reverse=True)
     return merged[:limit]
+
+
+async def get_student_recent_purchases(usuario_identificacion: str, days: int = 1, limit: int = 10) -> List[Dict]:
+    q = """
+        SELECT fecha, nombre_producto, cantidad, precio
+        FROM hackaton_ventas
+        WHERE usuario_identificacion=$1
+          AND fecha::date >= CURRENT_DATE - $2::int
+        ORDER BY fecha DESC
+        LIMIT $3
+    """
+    rows = await fetch_all(q, usuario_identificacion, days, limit)
+    return [
+        {
+            "timestamp": row["fecha"].isoformat() if hasattr(row["fecha"], "isoformat") else str(row["fecha"]),
+            "product": row["nombre_producto"],
+            "quantity": int(row["cantidad"] or 0),
+            "unit_price": float(row["precio"] or 0),
+            "total": float(row["precio"] or 0) * int(row["cantidad"] or 0),
+        }
+        for row in rows
+    ]
+
+
+async def get_student_avg_spend(usuario_identificacion: str, days: int = 30) -> float:
+    q = """
+        SELECT COALESCE(SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)), 0) / NULLIF(COUNT(DISTINCT fecha::date), 0) AS avg_daily
+        FROM hackaton_ventas
+        WHERE usuario_identificacion=$1
+          AND fecha::date >= CURRENT_DATE - $2::int
+    """
+    row = await fetch_one(q, usuario_identificacion, days)
+    return float(row["avg_daily"] or 0) if row else 0.0
+
+
+async def get_student_top_products(usuario_identificacion: str, limit: int = 5, days: int = 30) -> List[Dict]:
+    q = """
+        SELECT nombre_producto AS name,
+               SUM(CAST(cantidad AS INT)) AS units,
+               SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)) AS revenue
+        FROM hackaton_ventas
+        WHERE usuario_identificacion=$1
+          AND fecha::date >= CURRENT_DATE - $2::int
+        GROUP BY nombre_producto
+        ORDER BY revenue DESC
+        LIMIT $3
+    """
+    rows = await fetch_all(q, usuario_identificacion, days, limit)
+    return [
+        {"name": r["name"], "units": int(r["units"] or 0), "revenue": float(r["revenue"] or 0)}
+        for r in rows
+    ]
+
+
+async def get_student_top_product_prices(usuario_identificacion: str, limit: int = 5, days: int = 30) -> List[Dict]:
+    q = """
+        SELECT nombre_producto AS name,
+               AVG(CAST(precio AS NUMERIC)) AS avg_price,
+               SUM(CAST(cantidad AS INT)) AS units,
+               SUM(CAST(precio AS NUMERIC) * CAST(cantidad AS INT)) AS revenue
+        FROM hackaton_ventas
+        WHERE usuario_identificacion=$1
+          AND fecha::date >= CURRENT_DATE - $2::int
+        GROUP BY nombre_producto
+        ORDER BY revenue DESC
+        LIMIT $3
+    """
+    rows = await fetch_all(q, usuario_identificacion, days, limit)
+    return [
+        {
+            "name": r["name"],
+            "avg_price": float(r["avg_price"] or 0),
+            "units": int(r["units"] or 0),
+            "revenue": float(r["revenue"] or 0),
+        }
+        for r in rows
+    ]

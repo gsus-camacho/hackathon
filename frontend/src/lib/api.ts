@@ -8,10 +8,10 @@
  */
 
 export const PUBLIC_BACKEND_URL =
-  import.meta.env.PUBLIC_BACKEND_URL || "";
+  import.meta.env.PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 const INTERNAL_BACKEND_URL =
-  import.meta.env.INTERNAL_BACKEND_URL || "http://localhost:8001";
+  import.meta.env.INTERNAL_BACKEND_URL || "http://localhost:8000";
 
 interface CacheEntry { value: any; expires: number; promise?: Promise<any>; }
 const ssrCache = new Map<string, CacheEntry>();

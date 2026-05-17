@@ -1,6 +1,6 @@
 """Recommendations repository: stores AI recommendations + allergens in MongoDB."""
 from typing import Optional, List, Dict
-from core.mongo import get_db
+from core.sqlite import get_db
 
 
 async def insert_recommendation(doc: Dict) -> Dict:

@@ -55,6 +55,21 @@ async def send(req: SendMessageRequest):
         raise HTTPException(502, f"Twilio error: {e}")
 
 
+@router.post("/trigger/low-balance")
+async def trigger_low_balance(nit_colegio: Optional[str] = None):
+    return await svc._send_low_balance_alerts(nit_colegio)
+
+
+@router.post("/trigger/allergen-check")
+async def trigger_allergen_check():
+    return await svc._send_allergen_alerts()
+
+
+@router.post("/trigger/weekly-report")
+async def trigger_weekly_report():
+    return await svc._send_weekly_nutrition_report()
+
+
 @router.post("/whatsapp/webhook", response_class=PlainTextResponse)
 async def webhook(
     From: str = Form(...),

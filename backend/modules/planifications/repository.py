@@ -1,7 +1,7 @@
 """Planifications repository: balance + weekly meal plans."""
 from typing import Optional, List, Dict
 from core.postgres import fetch_all, fetch_one
-from core.mongo import get_db
+from core.sqlite import get_db
 
 
 # -- Balance queries (PostgreSQL) --

@@ -35,6 +35,11 @@ async def create_plan(req: MealPlanCreate):
     return await svc.create_plan(req)
 
 
+@router.post("/plans/generate")
+async def generate_plan(req: MealPlanCreate):
+    return await svc.generate_plan(req)
+
+
 @router.get("/plans")
 async def list_plans(hijo_id: Optional[str] = None):
     return await svc.list_plans(hijo_id)

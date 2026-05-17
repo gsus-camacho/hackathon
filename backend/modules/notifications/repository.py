@@ -1,7 +1,7 @@
 """Notifications repository: stores WhatsApp messages, bot sessions, read state in MongoDB."""
 from typing import Optional, List, Dict
 from datetime import datetime, timezone
-from core.mongo import get_db
+from core.sqlite import get_db
 
 
 async def insert_notification(doc: Dict) -> Dict:
