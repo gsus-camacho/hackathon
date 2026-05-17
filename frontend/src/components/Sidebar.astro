@@ -7,6 +7,10 @@ import {
   Bell,
   Sparkles,
   MessageCircle,
+  BarChart3,
+  Package,
+  ShieldAlert,
+  TrendingUp,
 } from "lucide-react";
 
 const { active = "dashboard" } = Astro.props;
@@ -15,8 +19,12 @@ const items = [
   { key: "dashboard", label: "Dashboard", href: "/", icon: LayoutDashboard },
   { key: "hijos", label: "Hijos", href: "/hijos", icon: Baby },
   { key: "planifications", label: "Planificaciones", href: "/planifications", icon: CalendarRange },
+  { key: "discounts", label: "Paquetes", href: "/discounts", icon: Package },
   { key: "feedback", label: "Feedback", href: "/feedback", icon: ThumbsUp },
   { key: "notifications", label: "Notificaciones", href: "/notifications", icon: Bell },
+  { key: "allergens", label: "Alergenos", href: "/allergens", icon: ShieldAlert },
+  { key: "statistics", label: "Estadísticas", href: "/statistics", icon: BarChart3 },
+  { key: "benchmark", label: "Benchmark B2B", href: "/benchmark", icon: TrendingUp },
   { key: "recommendations", label: "Recomendaciones IA", href: "/recommendations", icon: Sparkles },
   { key: "bot", label: "BioBot", href: "/bot", icon: MessageCircle },
 ];

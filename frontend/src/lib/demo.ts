@@ -1,22 +1,26 @@
 const sampleKpis = {
-  active_alerts: 14,
-  allergen_profiles: 32,
-  students_at_risk: 9,
-  total_revenue_30d: 125_000_000,
-  total_recargas_30d: 28_000_000,
-  total_students: 512,
-  bot_sessions_today: 18,
+  active_alerts: 27,
+  allergen_profiles: 64,
+  students_at_risk: 14,
+  total_revenue_30d: 248_500_000,
+  total_recargas_30d: 52_800_000,
+  total_students: 1_247,
+  bot_sessions_today: 43,
   satisfaction_score: 4.32,
-  package_revenue: 12_500_000,
+  package_revenue: 28_700_000,
 };
 
-const sampleSeries = Array.from({ length: 14 }, (_, index) => {
+const sampleSeries = Array.from({ length: 30 }, (_, index) => {
   const date = new Date();
-  date.setDate(date.getDate() - (13 - index));
+  date.setDate(date.getDate() - (29 - index));
+  const weekday = date.getDay();
+  const isWeekend = weekday === 0 || weekday === 6;
+  const base = isWeekend ? 2_000_000 : 7_500_000;
+  const noise = Math.round((Math.random() - 0.5) * 1_500_000);
   return {
     date: date.toISOString().slice(0, 10),
-    ventas: 5_000_000 + index * 120_000,
-    recargas: 420_000 + index * 10_000,
+    ventas: base + index * 80_000 + noise,
+    recargas: Math.round((base + noise) * 0.22 + index * 15_000),
   };
 });
 
@@ -29,13 +33,21 @@ const sampleTopProducts = [
   { name: "Sandwich integral", units: 260, revenue: 1_980_000 },
   { name: "Bowl saludable", units: 210, revenue: 1_760_000 },
   { name: "Agua saborizada", units: 185, revenue: 1_250_000 },
+  { name: "Galleta avena", units: 160, revenue: 960_000 },
+  { name: "Empanada de carne", units: 148, revenue: 888_000 },
+  { name: "Fruta entera", units: 135, revenue: 675_000 },
+  { name: "Brownie de chocolate", units: 120, revenue: 840_000 },
 ];
 
 const sampleActivity = [
-  { timestamp: "2026-05-14T10:24:00", kind: "venta", title: "Venta de paquete seguro", detail: "Paquete express entregado en colegio San Pedro" },
-  { timestamp: "2026-05-14T09:45:00", kind: "alert", title: "Alerta de alérgeno activada", detail: "Estudiante Juana M. pidió un producto con mani" },
-  { timestamp: "2026-05-13T18:12:00", kind: "venta", title: "Recarga de saldo", detail: "Acudiente cargó COP 20.000 para estudiante Luis A." },
-  { timestamp: "2026-05-13T08:54:00", kind: "alert", title: "Saldo cercano al límite", detail: "Estudiante Mateo P. tiene 2 días de saldo restante" },
+  { timestamp: "2026-05-17T10:24:00", kind: "venta", title: "Paquete semanal activado", detail: "María C. activó Combo Energía Escolar para Sofía" },
+  { timestamp: "2026-05-17T09:45:00", kind: "alert", title: "Alerta de alérgeno bloqueada", detail: "Producto con maní bloqueado automáticamente para Mateo P." },
+  { timestamp: "2026-05-17T09:30:00", kind: "venta", title: "Consumo registrado", detail: "Tomás R. compró Sandwich integral · COP 8.500" },
+  { timestamp: "2026-05-16T18:12:00", kind: "venta", title: "Recarga de saldo", detail: "Acudiente cargó COP 50.000 para Valentina G." },
+  { timestamp: "2026-05-16T14:20:00", kind: "alert", title: "Saldo bajo detectado", detail: "Estudiante Lucas M. tiene 1 día de saldo restante" },
+  { timestamp: "2026-05-16T08:54:00", kind: "venta", title: "Micro-rating recibido", detail: "👍 para Jugo natural naranja — rating 4.5/5" },
+  { timestamp: "2026-05-15T16:30:00", kind: "alert", title: "Nuevo producto analizado", detail: "Gemini verificó Brownie de chocolate contra 12 perfiles" },
+  { timestamp: "2026-05-15T11:00:00", kind: "venta", title: "Paquete mensual completado", detail: "Andrés P. alcanzó meta de COP 85.000 — recompensa desbloqueada 🎁" },
 ];
 
 const sampleSchools = [
@@ -43,6 +55,9 @@ const sampleSchools = [
   { colegio: "Institución La Paz", nit_colegio: "900765432-1", total_students: 196 },
   { colegio: "Colegio Lumina", nit_colegio: "900998877-0", total_students: 145 },
   { colegio: "Colegio Nuevo Amanecer", nit_colegio: "900112233-9", total_students: 122 },
+  { colegio: "Liceo del Caribe", nit_colegio: "900445566-3", total_students: 198 },
+  { colegio: "Colegio Bilingüe del Norte", nit_colegio: "900778899-2", total_students: 167 },
+  { colegio: "Instituto Moderno", nit_colegio: "900334455-8", total_students: 171 },
 ];
 
 const samplePackages = [
@@ -78,6 +93,22 @@ const samplePackages = [
     valid_until: "2026-05-28",
     active: true,
   },
+  {
+    id: "pkg-03",
+    name: "Paquete Semanal Completo",
+    description: "5 almuerzos + 5 snacks para toda la semana escolar.",
+    items: [
+      { product_name: "Sandwich integral", quantity: 5, unit_price: 8500 },
+      { product_name: "Jugo natural naranja", quantity: 5, unit_price: 6500 },
+      { product_name: "Snacks de fruta", quantity: 5, unit_price: 5500 },
+    ],
+    original_total: 105_000,
+    discounted_total: 89_000,
+    discount_pct: 15,
+    target_segment: "high_consumption",
+    valid_until: "2026-06-15",
+    active: true,
+  },
 ];
 
 const sampleRecommendations = [
@@ -105,6 +136,14 @@ const sampleRecommendations = [
     kind: "operational",
     impact_score: 68,
   },
+  {
+    id: "rec-04",
+    title: "Descontinuar Galleta avena",
+    summary: "SI de 0.34 y ventas -14% vs mediana nacional. Producto sin demanda sostenible.",
+    rationale: "Liberar espacio de inventario para productos con mayor rotación y satisfacción.",
+    kind: "operational",
+    impact_score: 72,
+  },
 ];
 
 const sampleAllergens = [
@@ -125,6 +164,15 @@ const sampleAllergens = [
     nit_colegio: "900765432-1",
     allergens: ["gluten"],
     notes: "Prefiere almuerzos vegetarianos por sensibilidad al gluten.",
+  },
+  {
+    id: "alg-03",
+    usuario_identificacion: "0010066603",
+    nombre_estudiante: "Valentina G.",
+    identificacion_padre: "0802200095",
+    nit_colegio: "900998877-0",
+    allergens: ["huevo", "soya"],
+    notes: "Alergia severa a huevo. Verificar siempre composición.",
   },
 ];
 
@@ -155,6 +203,32 @@ const sampleHijos = [
     notes: "Alergia leve a gluten; evita panes y galletas industriales.",
     parent_phone: "+573002112233",
   },
+  {
+    id: "hijo-003",
+    usuario_identificacion: "0010066603",
+    nombre_estudiante: "Valentina G.",
+    identificacion_padre: "0802200095",
+    nombre_padre: "Carolina G.",
+    nit_colegio: "900998877-0",
+    colegio: "Colegio Lumina",
+    grado: "3°",
+    allergens: ["huevo", "soya"],
+    notes: "Alergia severa a huevo. Solo productos verificados.",
+    parent_phone: "+573005443322",
+  },
+  {
+    id: "hijo-004",
+    usuario_identificacion: "0010066604",
+    nombre_estudiante: "Tomás R.",
+    identificacion_padre: "0802200110",
+    nombre_padre: "Ricardo R.",
+    nit_colegio: "900123456-7",
+    colegio: "Colegio San José",
+    grado: "6°",
+    allergens: [],
+    notes: "Sin restricciones alimentarias. Alto consumidor.",
+    parent_phone: "+573006778899",
+  },
 ];
 
 const sampleNotifications = [
@@ -162,28 +236,55 @@ const sampleNotifications = [
     id: "notif-01",
     kind: "allergen_alert",
     recipient_phone: "whatsapp:+573004280744",
-    message: "Intento de compra con mani detectado para Mateo P.",
+    message: "⛔ Intento de compra con maní detectado para Mateo P. Producto bloqueado automáticamente.",
     status: "delivered",
     read: false,
-    created_at: "2026-05-14T11:05:00",
+    created_at: "2026-05-17T11:05:00",
   },
   {
     id: "notif-02",
     kind: "low_balance",
     recipient_phone: "whatsapp:+573002112233",
-    message: "Saldo crítico: Sofía C. tiene COP 1.800 restantes.",
+    message: "⚠️ Saldo bajo: Sofía C. tiene COP 1.800 restantes (~0.3 días).",
     status: "delivered",
     read: false,
-    created_at: "2026-05-13T17:42:00",
+    created_at: "2026-05-17T09:42:00",
   },
   {
     id: "notif-03",
     kind: "package_offer",
     recipient_phone: "whatsapp:+573004280744",
-    message: "Nuevo paquete Balance Vital disponible para tu hijo.",
+    message: "📦 Nuevo paquete Balance Vital disponible para tu hijo. 15% de descuento esta semana.",
     status: "sent",
     read: true,
-    created_at: "2026-05-13T09:20:00",
+    created_at: "2026-05-16T09:20:00",
+  },
+  {
+    id: "notif-04",
+    kind: "consumption",
+    recipient_phone: "whatsapp:+573006778899",
+    message: "🍽️ Tomás R. compró Sandwich integral (COP 8.500) a las 12:14. ¿Cómo le pareció? 👍👎",
+    status: "delivered",
+    read: false,
+    created_at: "2026-05-17T12:15:00",
+  },
+  {
+    id: "notif-05",
+    kind: "new_product",
+    recipient_phone: "whatsapp:+573005443322",
+    message: "🆕 La cafetería añadió Brownie de chocolate al catálogo. Gemini verificó: compatible con el perfil de Valentina.",
+    status: "delivered",
+    read: true,
+    created_at: "2026-05-16T15:30:00",
+  },
+  {
+    id: "notif-06",
+    kind: "reward",
+    recipient_phone: "whatsapp:+573004280744",
+    message: "🎁 ¡Mateo P. alcanzó la meta semanal! Recompensa desbloqueada: Bebida gratis.",
+    status: "delivered",
+    read: true,
+    created_at: "2026-05-15T16:00:00",
   },
 ];
 
@@ -191,9 +292,12 @@ const sampleFeedbackProducts = [
   { product_name: "Wrap de pollo", up: 24, down: 3, total: 27, score_pct: 89 },
   { product_name: "Jugo natural naranja", up: 18, down: 2, total: 20, score_pct: 90 },
   { product_name: "Arepa de huevo", up: 12, down: 5, total: 17, score_pct: 71 },
+  { product_name: "Sandwich integral", up: 22, down: 1, total: 23, score_pct: 96 },
+  { product_name: "Yogur bebida", up: 15, down: 4, total: 19, score_pct: 79 },
+  { product_name: "Bowl saludable", up: 10, down: 3, total: 13, score_pct: 77 },
 ];
 
-const feedbackSummary = { average: 4.2, count: 63 };
+const feedbackSummary = { average: 4.32, count: 119 };
 
 function keepTop<T>(items: T[], limit: number) {
   return items.slice(0, limit);
@@ -219,10 +323,12 @@ function sampleActivePlanForChild(hijoId: string) {
     minimum_budget: 42_000,
     items: [
       { day: 0, product_name: "Wrap de pollo", quantity: 1, unit_price: 8500 },
+      { day: 1, product_name: "Jugo natural naranja", quantity: 1, unit_price: 6500 },
       { day: 2, product_name: "Yogur bebida", quantity: 1, unit_price: 5200 },
-      { day: 4, product_name: "Snack de fruta", quantity: 1, unit_price: 5500 },
+      { day: 3, product_name: "Sandwich integral", quantity: 1, unit_price: 8500 },
+      { day: 4, product_name: "Snacks de fruta", quantity: 1, unit_price: 5500 },
     ],
-    current_total: 19_500,
+    current_total: 34_200,
     goal_met: false,
     reward: "Bebida gratis al completar la semana",
   };
@@ -239,7 +345,7 @@ export function demoFallback(path: string) {
 
   if (pathname === "/statistics/kpis") return sampleKpis;
   if (pathname === "/statistics/series") return sampleSeries;
-  if (pathname === "/statistics/top-products") return keepTop(sampleTopProducts, parseLimit(url, 8));
+  if (pathname === "/statistics/top-products") return keepTop(sampleTopProducts, parseLimit(url, 12));
   if (pathname === "/statistics/activity") return keepTop(sampleActivity, parseLimit(url, 10));
   if (pathname === "/statistics/schools") return keepTop(sampleSchools, parseLimit(url, 10));
   if (pathname === "/discounts/packages") return samplePackages;
@@ -247,8 +353,9 @@ export function demoFallback(path: string) {
   if (pathname === "/recommendations/allergens") return sampleAllergens;
   if (pathname === "/hijos/") return sampleHijos;
   if (pathname.startsWith("/planifications/hijos/") && pathname.endsWith("/active-plan")) {
-    const [,, hijoId] = pathname.split("/");
-    return sampleActivePlanForChild(hijoId || "demo");
+    const parts = pathname.split("/").filter(Boolean);
+    const hijoId = parts[2] || "demo";
+    return sampleActivePlanForChild(hijoId);
   }
   if (pathname === "/notifications/") {
     const read = parseReadFilter(url);
@@ -267,8 +374,8 @@ export function demoFallback(path: string) {
         avg_daily_spend: 6500,
         days_remaining: 1,
         risk_level: "Alto",
-        last_consumption_date: "2026-05-13",
-        last_recharge_date: "2026-05-10",
+        last_consumption_date: "2026-05-17",
+        last_recharge_date: "2026-05-14",
       },
       {
         usuario_identificacion: "0010066602",
@@ -278,8 +385,19 @@ export function demoFallback(path: string) {
         avg_daily_spend: 7200,
         days_remaining: 2,
         risk_level: "Medio",
-        last_consumption_date: "2026-05-13",
-        last_recharge_date: "2026-05-09",
+        last_consumption_date: "2026-05-17",
+        last_recharge_date: "2026-05-13",
+      },
+      {
+        usuario_identificacion: "0010066604",
+        nombre_estudiante: "Tomás R.",
+        nit_colegio: "900123456-7",
+        current_balance: 4800,
+        avg_daily_spend: 9500,
+        days_remaining: 2,
+        risk_level: "Medio",
+        last_consumption_date: "2026-05-17",
+        last_recharge_date: "2026-05-12",
       },
     ];
   }
@@ -312,14 +430,14 @@ export function demoPostFallback(path: string, body?: any) {
     return {
       id: makeNewId("hijo"),
       usuario_identificacion: body?.usuario_identificacion || "0000000000",
-      nombre_estudiante: `Estudiante ${body?.usuario_identificacion || "Nuevo"}`,
+      nombre_estudiante: body?.nombre_estudiante || `Estudiante ${body?.usuario_identificacion || "Nuevo"}`,
       identificacion_padre: body?.identificacion_padre || "0000000000",
-      nombre_padre: "Acudiente Demo",
-      nit_colegio: "900000000-0",
-      colegio: "Colegio Demo",
-      grado: "5°",
+      nombre_padre: body?.nombre_padre || "Acudiente Demo",
+      nit_colegio: body?.nit_colegio || "900000000-0",
+      colegio: body?.colegio || "Colegio Demo",
+      grado: body?.grado || "5°",
       allergens: body?.allergens || [],
-      notes: body?.notes || "Registro de demo.",
+      notes: body?.notes || "Registro creado.",
       parent_phone: body?.parent_phone || "+573000000000",
     };
   }
@@ -367,7 +485,7 @@ export function demoPostFallback(path: string, body?: any) {
     };
   }
   if (pathname === "/notifications/whatsapp/simulate") {
-    return { reply: `Respondiendo desde BioBot: recibí tu mensaje \"${body?.Body || ""}\". Estado de saldo actualizado.` };
+    return { reply: `Respondiendo desde BioBot: recibí tu mensaje "${body?.Body || ""}". Estado de saldo actualizado.` };
   }
 
   return {};

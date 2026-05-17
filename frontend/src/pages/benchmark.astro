@@ -1,0 +1,97 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card.tsx";
+import BenchmarkChart from "../components/BenchmarkChart.tsx";
+import SatisfactionTable from "../components/SatisfactionTable.tsx";
+import { TrendingUp, BarChart3, ShoppingCart, Trash2, Clock } from "lucide-react";
+
+const benchmarkData = [
+  { product: "Sandwich integral", delta: 18 },
+  { product: "Jugo natural", delta: 11 },
+  { product: "Wrap pollo", delta: 2 },
+  { product: "Yogur bebida", delta: 8 },
+  { product: "Bowl saludable", delta: 5 },
+  { product: "Arepa de huevo", delta: -3 },
+  { product: "Galleta avena", delta: -14 },
+  { product: "Snack industrial", delta: -22 },
+];
+
+const satisfactionData = [
+  { product: "Sandwich integral", si: 0.92, action: "Mantener" as const },
+  { product: "Jugo natural", si: 0.88, action: "Mantener" as const },
+  { product: "Yogur bebida", si: 0.84, action: "Mantener" as const },
+  { product: "Bowl saludable", si: 0.79, action: "Mantener" as const },
+  { product: "Wrap pollo", si: 0.61, action: "Revisar" as const },
+  { product: "Arepa de huevo", si: 0.55, action: "Revisar" as const },
+  { product: "Galleta avena", si: 0.34, action: "Descontinuar" as const },
+  { product: "Snack industrial", si: 0.21, action: "Descontinuar" as const },
+];
+---
+<Layout title="Benchmark B2B" active="benchmark" description="Pilar 03 · Inteligencia B2B">
+  <div class="mb-6 animate-fade-up">
+    <h1 class="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-bio-900">
+      Inteligencia B2B sobre datos propietarios
+    </h1>
+    <p class="text-bio-500 text-sm mt-1 max-w-3xl">
+      Triangulación de volumen histórico × Satisfaction Index. La cafetería recibe recomendaciones de inventario fundamentadas, no intuiciones.
+    </p>
+  </div>
+
+  <!-- Triangulation hero -->
+  <section class="relative overflow-hidden rounded-2xl bg-bio-900 text-bio-100 p-6 mb-6 grain" data-testid="benchmark-hero">
+    <div class="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div>
+        <span class="text-[10px] uppercase tracking-[0.25em] font-mono text-bio-500">Pilar 03 · Núcleo de monetización</span>
+        <h2 class="font-heading text-2xl sm:text-3xl font-semibold text-white mt-2 max-w-xl">
+          Volumen histórico × satisfacción cualitativa.
+        </h2>
+        <p class="text-sm text-bio-200 mt-2 max-w-xl">
+          10 años de datos transaccionales propietarios cruzados con feedback directo de los padres.
+          Barrera de entrada que ningún competidor reciente puede replicar.
+        </p>
+      </div>
+      <div class="flex flex-col gap-2">
+        <div class="inline-flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2 text-sm text-white">
+          <ShoppingCart class="h-4 w-4" /> Qué comprar
+        </div>
+        <div class="inline-flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2 text-sm text-white">
+          <Trash2 class="h-4 w-4" /> Qué descontinuar
+        </div>
+        <div class="inline-flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2 text-sm text-white">
+          <Clock class="h-4 w-4" /> Cuándo reabastecer
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Benchmark Nacional -->
+    <Card title="Benchmark Nacional" description="vs. 24 colegios perfil similar">
+      <BenchmarkChart data={benchmarkData} client:visible />
+    </Card>
+
+    <!-- Satisfaction Index -->
+    <Card title="Satisfaction Index" description="frecuencia · repetición · rating">
+      <SatisfactionTable data={satisfactionData} client:visible />
+    </Card>
+  </div>
+
+  <!-- Summary KPIs -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="kpi-benchmark-schools">
+      <div class="text-[10px] uppercase tracking-[0.18em] text-bio-500 font-mono">Colegios comparados</div>
+      <div class="font-heading text-3xl font-semibold text-bio-900 mt-1">24</div>
+      <p class="text-xs text-bio-500 mt-1">Perfil similar por matrícula y región</p>
+    </div>
+    <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="kpi-benchmark-records">
+      <div class="text-[10px] uppercase tracking-[0.18em] text-bio-500 font-mono">Registros analizados</div>
+      <div class="font-heading text-3xl font-semibold text-bio-900 mt-1">7.2M</div>
+      <p class="text-xs text-bio-500 mt-1">Transacciones acumuladas en una década</p>
+    </div>
+    <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="kpi-benchmark-si">
+      <div class="text-[10px] uppercase tracking-[0.18em] text-bio-500 font-mono">SI promedio red</div>
+      <div class="font-heading text-3xl font-semibold text-bio-900 mt-1">0.68</div>
+      <p class="text-xs text-bio-500 mt-1">Satisfacción compuesta nacional</p>
+    </div>
+  </div>
+</Layout>

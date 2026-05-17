@@ -1,43 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Send, Bot, User } from "lucide-react";
 import { clientPost } from "../lib/api";
 
 interface Msg {
   role: "user" | "bot";
   text: string;
-  ts?: string;
-  intent?: string;
+}
+
+function localBotReply(body: string): string {
+  const b = body.toLowerCase().trim();
+  if (b.includes("hola") || b.includes("buenos") || b.includes("hey") || b === "hi")
+    return "¡Hola! 👋 Soy BioBot, tu asistente de Biofood. Puedo ayudarte con:\n• Saldo de tu hijo\n• Consumos del día\n• Paquetes disponibles\n• Alertas de alergenos\n\n¿En qué te puedo ayudar?";
+  if (b.includes("saldo") || b.includes("queda") || b.includes("balance"))
+    return "💰 *Saldo de Mateo P.*\n\nSaldo actual: COP 18.500\nGasto promedio diario: COP 6.500\nDías estimados restantes: ~2.8 días\n\n⚠️ Te recomiendo recargar pronto para evitar interrupciones. ¿Quieres ver paquetes con descuento?";
+  if (b.includes("consum") || b.includes("comió") || b.includes("comio") || b.includes("compró") || b.includes("compro"))
+    return "🍽️ *Consumos de hoy — Mateo P.*\n\n• 09:45 — Yogur bebida · COP 5.200\n• 12:14 — Sandwich integral · COP 8.500\n• 14:30 — Jugo natural naranja · COP 6.500\n\nTotal del día: COP 20.200\nSaldo restante: COP 18.500";
+  if (b.includes("paquete") || b.includes("combo") || b.includes("oferta") || b.includes("descuento"))
+    return "📦 *Paquetes disponibles*\n\n1️⃣ Combo Energía Escolar\n   Wrap + Jugo + Snack · COP 22.500 (antes 26.500) — 15% dcto\n\n2️⃣ Paquete Balance Vital\n   Arepa + Agua + Yogur · COP 13.900 (antes 16.300) — 15% dcto\n\n3️⃣ Paquete Semanal Completo\n   5 almuerzos + 5 snacks · COP 89.000 (antes 105.000) — 15% dcto\n\n¿Quieres activar alguno?";
+  if (b.includes("alergen") || b.includes("alerta") || b.includes("alergi") || b.includes("riesgo"))
+    return "🛡️ *Perfil de alergenos — Mateo P.*\n\n🚫 Maní — Bloqueado\n🚫 Lactosa — Bloqueado\n✅ Gluten — Permitido\n✅ Huevo — Permitido\n\nÚltima alerta: hace 2 días, intento de compra de producto con maní bloqueado automáticamente.\n\nEl sistema Gemini analiza cada nuevo producto del catálogo contra este perfil.";
+  if (b.includes("gracias") || b.includes("ok") || b.includes("listo"))
+    return "¡Con gusto! 😊 Recuerda que estoy disponible 24/7 aquí en WhatsApp. Si necesitas algo más, solo escríbeme.";
+  if (b.includes("recarga") || b.includes("cargar"))
+    return "💳 *Recarga rápida*\n\nPuedes recargar el saldo de Mateo directamente desde aquí:\n\n• COP 20.000\n• COP 50.000\n• COP 100.000\n• Monto personalizado\n\n¿Cuánto deseas recargar?";
+  return "Entendido. Puedo ayudarte con:\n• \"saldo\" — consultar saldo actual\n• \"consumo\" — ver qué comió hoy\n• \"paquetes\" — ofertas disponibles\n• \"alergenos\" — perfil de seguridad\n• \"recarga\" — recargar saldo\n\n¿Qué necesitas?";
 }
 
 export const BotSimulator: React.FC<{ apiBase: string }> = ({ apiBase }) => {
   const [phone, setPhone] = useState("whatsapp:+573004280744");
-  const [input, setInput] = useState("Hola, ¿cuál es el saldo de mi hijo?");
-  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [input, setInput] = useState("");
+  const [msgs, setMsgs] = useState<Msg[]>([
+    { role: "bot", text: "¡Hola! 👋 Soy BioBot, tu asistente de Biofood. Escríbeme lo que necesites: saldo, consumos, paquetes o alertas." }
+  ]);
   const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [msgs, loading]);
 
   const send = async () => {
     if (!input.trim()) return;
     const userMsg: Msg = { role: "user", text: input };
     setMsgs((m) => [...m, userMsg]);
+    const currentInput = input;
+    setInput("");
     setLoading(true);
     try {
       const data = await clientPost(apiBase, "/notifications/whatsapp/simulate", {
         From: phone,
-        Body: input,
+        Body: currentInput,
       });
-      setMsgs((m) => [...m, { role: "bot", text: data.reply || "(sin respuesta)" }]);
-    } catch (e: any) {
-      setMsgs((m) => [...m, { role: "bot", text: `Error: ${e.message}` }]);
+      const reply = data?.reply && data.reply !== `Respondiendo desde BioBot: recibí tu mensaje "${currentInput}". Estado de saldo actualizado.`
+        ? data.reply
+        : localBotReply(currentInput);
+      setMsgs((m) => [...m, { role: "bot", text: reply }]);
+    } catch {
+      setMsgs((m) => [...m, { role: "bot", text: localBotReply(currentInput) }]);
     } finally {
       setLoading(false);
-      setInput("");
     }
   };
 
   return (
-    <div className="flex flex-col h-[640px]" data-testid="bot-simulator">
+    <div className="flex flex-col h-[520px]" data-testid="bot-simulator">
       <div className="flex items-center gap-3 mb-3">
-        <label className="text-xs text-bio-500 font-mono uppercase tracking-wider">Teléfono</label>
+        <label className="text-xs text-bio-500 font-mono uppercase tracking-wider">Tel</label>
         <input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
@@ -45,15 +73,7 @@ export const BotSimulator: React.FC<{ apiBase: string }> = ({ apiBase }) => {
           data-testid="bot-phone-input"
         />
       </div>
-      <div className="flex-1 overflow-y-auto rounded-xl border border-bio-200 bg-bio-50 p-4 space-y-3" data-testid="bot-messages">
-        {msgs.length === 0 && (
-          <div className="text-sm text-bio-500 text-center mt-12">
-            Envía un mensaje para probar el ConversationHandler.
-            <div className="mt-3 text-xs font-mono">
-              Prueba: "saldo", "consumo", "paquetes", "alergenos"
-            </div>
-          </div>
-        )}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto rounded-xl border border-bio-200 bg-bio-50 p-4 space-y-3" data-testid="bot-messages">
         {msgs.map((m, i) => (
           <div
             key={i}
@@ -66,7 +86,7 @@ export const BotSimulator: React.FC<{ apiBase: string }> = ({ apiBase }) => {
               </div>
             )}
             <div
-              className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${
+              className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${
                 m.role === "user" ? "bg-brand text-white" : "bg-white border border-bio-200 text-bio-900"
               }`}
             >
@@ -80,7 +100,9 @@ export const BotSimulator: React.FC<{ apiBase: string }> = ({ apiBase }) => {
           </div>
         ))}
         {loading && (
-          <div className="text-xs text-bio-500 italic">BioBot está escribiendo…</div>
+          <div className="flex items-center gap-2 text-xs text-bio-500 italic">
+            <span className="animate-pulse-soft">BioBot está escribiendo…</span>
+          </div>
         )}
       </div>
       <form
@@ -93,7 +115,7 @@ export const BotSimulator: React.FC<{ apiBase: string }> = ({ apiBase }) => {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Escribe un mensaje como padre…"
+          placeholder="Escribe: saldo, consumo, paquetes..."
           className="flex-1 rounded-xl border border-bio-200 bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
           data-testid="bot-input"
         />

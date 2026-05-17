@@ -1,11 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import BotSimulator from "../components/BotSimulator.tsx";
 import { MessageCircle, ShieldAlert, TrendingDown, Tag, Sparkles, ArrowUpRight } from "lucide-react";
+import { PUBLIC_BACKEND_URL } from "../lib/api";
 
 const whatsappLink = "https://wa.me/14155238886?text=" + encodeURIComponent("join earn-fact");
 ---
 <Layout title="BioBot" active="bot" description="WhatsApp assistant">
-  <div class="max-w-4xl">
+  <div class="max-w-5xl">
     <div class="mb-6">
       <span class="text-[10px] uppercase tracking-[0.22em] font-mono text-bio-500">BioBot — solo WhatsApp</span>
       <h1 class="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-bio-900 mt-2">
@@ -18,7 +20,7 @@ const whatsappLink = "https://wa.me/14155238886?text=" + encodeURIComponent("joi
       </p>
     </div>
 
-    <div class="relative overflow-hidden rounded-2xl bg-bio-900 text-bio-100 p-8 grain" data-testid="bot-cta-card">
+    <div class="relative overflow-hidden rounded-2xl bg-bio-900 text-bio-100 p-8 grain mb-6" data-testid="bot-cta-card">
       <div class="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div class="flex items-center gap-4">
           <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 grid place-items-center">
@@ -45,34 +47,43 @@ const whatsappLink = "https://wa.me/14155238886?text=" + encodeURIComponent("joi
       </div>
     </div>
 
-    <div class="grid sm:grid-cols-2 gap-4 mt-6">
-      <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-consumption">
-        <div class="flex items-center gap-2">
-          <div class="rounded-lg bg-brand-soft text-brand p-2"><Sparkles class="h-4 w-4" /></div>
-          <h3 class="font-heading font-semibold text-bio-900">"¿Qué comió mi hijo hoy?"</h3>
-        </div>
-        <p class="text-sm text-bio-500 mt-2">BioBot consulta hackaton_ventas y responde con los productos del día, hora y monto.</p>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Bot Simulator -->
+      <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="bot-sim-card">
+        <h3 class="font-heading font-semibold text-bio-900 mb-3">Simulador de conversación</h3>
+        <BotSimulator apiBase={PUBLIC_BACKEND_URL} client:load />
       </div>
-      <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-balance">
-        <div class="flex items-center gap-2">
-          <div class="rounded-lg bg-emerald-50 text-ok p-2"><TrendingDown class="h-4 w-4" /></div>
-          <h3 class="font-heading font-semibold text-bio-900">"¿Cuánto saldo le queda?"</h3>
+
+      <!-- Intent cards -->
+      <div class="space-y-4">
+        <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-consumption">
+          <div class="flex items-center gap-2">
+            <div class="rounded-lg bg-brand-soft text-brand p-2"><Sparkles class="h-4 w-4" /></div>
+            <h3 class="font-heading font-semibold text-bio-900">"¿Qué comió mi hijo hoy?"</h3>
+          </div>
+          <p class="text-sm text-bio-500 mt-2">BioBot consulta hackaton_ventas y responde con los productos del día, hora y monto.</p>
         </div>
-        <p class="text-sm text-bio-500 mt-2">Calcula recargas vs consumo y predice días restantes en menos de 2 segundos.</p>
-      </div>
-      <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-package">
-        <div class="flex items-center gap-2">
-          <div class="rounded-lg bg-amber-50 text-warn p-2"><Tag class="h-4 w-4" /></div>
-          <h3 class="font-heading font-semibold text-bio-900">"Muéstrame paquetes"</h3>
+        <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-balance">
+          <div class="flex items-center gap-2">
+            <div class="rounded-lg bg-emerald-50 text-ok p-2"><TrendingDown class="h-4 w-4" /></div>
+            <h3 class="font-heading font-semibold text-bio-900">"¿Cuánto saldo le queda?"</h3>
+          </div>
+          <p class="text-sm text-bio-500 mt-2">Calcula recargas vs consumo y predice días restantes en menos de 2 segundos.</p>
         </div>
-        <p class="text-sm text-bio-500 mt-2">Listado de paquetes dinámicos vigentes con descuento aplicado.</p>
-      </div>
-      <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-alerts">
-        <div class="flex items-center gap-2">
-          <div class="rounded-lg bg-red-50 text-danger p-2"><ShieldAlert class="h-4 w-4" /></div>
-          <h3 class="font-heading font-semibold text-bio-900">"¿Hay alguna alerta?"</h3>
+        <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-package">
+          <div class="flex items-center gap-2">
+            <div class="rounded-lg bg-amber-50 text-warn p-2"><Tag class="h-4 w-4" /></div>
+            <h3 class="font-heading font-semibold text-bio-900">"Muéstrame paquetes"</h3>
+          </div>
+          <p class="text-sm text-bio-500 mt-2">Listado de paquetes dinámicos vigentes con descuento aplicado.</p>
         </div>
-        <p class="text-sm text-bio-500 mt-2">Estado de alergenos registrados y alertas activas por hijo.</p>
+        <div class="rounded-xl border border-bio-200 bg-white p-5" data-testid="intent-alerts">
+          <div class="flex items-center gap-2">
+            <div class="rounded-lg bg-red-50 text-danger p-2"><ShieldAlert class="h-4 w-4" /></div>
+            <h3 class="font-heading font-semibold text-bio-900">"¿Hay alguna alerta?"</h3>
+          </div>
+          <p class="text-sm text-bio-500 mt-2">Estado de alergenos registrados y alertas activas por hijo.</p>
+        </div>
       </div>
     </div>
 
@@ -80,7 +91,7 @@ const whatsappLink = "https://wa.me/14155238886?text=" + encodeURIComponent("joi
       <h3 class="font-heading font-semibold text-bio-900 mb-1">¿Integrando en producción?</h3>
       <p class="text-sm text-bio-500 mb-3">Configura el webhook de Twilio apuntando a este endpoint y BioBot estará listo.</p>
       <code class="block text-xs font-mono text-bio-900 bg-bio-50 px-3 py-2 rounded-lg break-all" data-testid="webhook-url">
-        POST https://88bfab26-c04e-4ef6-ba04-035dcbdfe13b.preview.emergentagent.com/api/notifications/whatsapp/webhook
+        POST /api/notifications/whatsapp/webhook
       </code>
     </div>
   </div>
